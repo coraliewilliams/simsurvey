@@ -1,0 +1,154 @@
+---
+title: "Current practices of simulations studies for statistical method evaluation in Ecology and Evolutionary Biology"
+
+author: "Coralie Williams, Malgorzata Lagisz, Kyle Morrison, Lorenzo Ricolfi, Yefeng Yang, David Warton, and Shinichi Nakagawa"
+
+date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
+
+format:
+  html:
+    theme:
+      - cosmo
+      - r4ds.scss
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This document
+
+# Protocol
+
+
+We preregistered a detailed protocol of the study on the Open Science Framework on 1st February 2023: <https://doi.org/10.17605/OSF.IO/5JUZP>
+
+# Literature search
+
+## Journal list
+
+```{r journalList, echo=FALSE, message=FALSE, warning=FALSE}
+#
+
+# Load libraries
+library(readr)
+library(dplyr)
+library(plyr)
+library(purrr)
+library(broom)
+library(splitstackshape)
+
+
+# Set working directory
+#datdir <- rprojroot::find_rstudio_root_file("scoping")
+setwd("C:/Users/z5394590/OneDrive - UNSW/Documents/Projects/simsurvey/")
+datdir <- rprojroot::find_rstudio_root_file("data")
+
+
+# Read list of journals
+# Files were downloaded from Web of Science on the 30/09/2022
+jcr_stats_path <- file.path(datdir, "JCR_JournalResults_09_2022_Statistics_and_Probability.csv")
+jcr_eco_path <- file.path(datdir, "JCR_JournalResults_09_2022_Ecology.csv")
+jcr_evo_path <- file.path(datdir, "JCR_JournalResults_09_2022_Evolutionary_Biology.csv")
+
+# Load journal lists
+jcr_stats <- read_csv(jcr_stats_path, skip = 2)
+jcr_eco <- read_csv(jcr_eco_path, skip = 2)
+jcr_evo <- read_csv(jcr_evo_path, skip = 2)
+# Clean: delete empty rows and comment lines at the end of files
+jcr_stats <- jcr_stats[which(!is.na(jcr_stats$ISSN)),]
+jcr_eco <- jcr_eco[which(!is.na(jcr_eco$ISSN)),]
+jcr_evo <- jcr_evo[which(!is.na(jcr_evo$ISSN)),]
+
+
+# Check how many journals overlap between each journal group
+jcr_stats[which(jcr_stats$`Journal name` %in% jcr_eco$`Journal name`),]
+jcr_eco$`Journal name`[which(jcr_eco$`Journal name` %in% jcr_evo$`Journal name`)]
+jcr_evo$`Journal name`[which(jcr_evo$`Journal name` %in% jcr_eco$`Journal name`)]
+
+
+# get list of matching and unique journals in eco and evo groups
+ecoevo_match <- merge(jcr_eco[,-5], jcr_evo[,-5])
+ecoevo_match$Category <- "Both"
+ecoevo_notmatch <- jcr_eco[which(!jcr_evo$`Journal name` %in% ecoevo_match$`Journal name`),]
+
+# get merged list of journals from eco and evo
+ecoevo_merged <- rbind(ecoevo_match, ecoevo_notmatch)
+
+# output merged table
+kable(ecoevo_merged)
+
+# save results
+write_csv(ecoevo_merged, "output/ecoevo_jcr_journal_list.csv", na="")
+```
+
+## Search strings
+
+![Caption for the picture.](C:/Users/z5394590/OneDrive%20-%20UNSW/Documents/R/simstudies/protocol/keywords.png)
+
+
+## Inclusion and exclusion criteria
+
+-   Include publications between 01-01-2012 and 01-09-2022.
+-   Include studies using simulation for the evaluation of statistical methodologies. Simulation studies that are not assessing methods in statistics will be excluded (for example simulation studies to assess ecological theories: <https://doi.org/10.1016/j.ecolmodel.2019.02.007>).
+-   Simulation studies that are part of a review, commentary, letter to the editor or tutorial will be excluded (for example: <https://doi.org/10.1111/2041-210X.1380>) Included studies published in one of predefined journals in Table 1.
+-   Include if: Full text is available and full text is in English
+
+## Screening
+
+### Abstract and title screening
+
+![Caption for the picture.](C:/Users/z5394590/OneDrive%20-%20UNSW/Documents/R/simstudies/protocol/abstractscreening.png)
+
+### Full-text screening
+
+![Caption for the picture.](C:/Users/z5394590/OneDrive%20-%20UNSW/Documents/R/simstudies/protocol/fulltextscreening.png)
+
+
+# Text extraction
+
+
+
+
+# Important points
+
+### Example of MCMC studies
+
+Example of papers including an analaysis using Monte Carlo Markov Chain (MCMC):
+
+
+
+
+# Session info
+
+```{r Reproducibility-SessionInfo-R-environment, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width='100%', results='asis'}
+library(devtools)
+library(knitr)
+library(tibble)
+library(kableExtra)
+
+df_session_platform <- devtools::session_info()$platform %>% 
+  unlist(.) %>% 
+  as.data.frame(.) %>% 
+  rownames_to_column(.)
+
+colnames(df_session_platform) <- c("Setting", "Value")
+
+kable(
+  df_session_platform, 
+  booktabs = T, 
+  align = "l",
+  caption = "(ref:Reproducibility-SessionInfo-R-environment-title)", # complete caption for main document
+  caption.short = " " # "(ref:Reproducibility-SessionInfo-R-environment-caption)" # short caption for LoT
+) %>% 
+  kable_styling(full_width = F,
+                latex_options = c(
+                  "hold_position" # stop table floating
+                ) 
+  ) 
+
+
+df_session_packages <- devtools::session_info()$package %>% 
+kable(df_session_packages)
+
+```
