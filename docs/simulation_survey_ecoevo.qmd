@@ -25,7 +25,7 @@ editor_options:
 
 pacman::p_load(
   readr, dplyr, plyr, purrr, splitstackshape,
-  details, sessioninfo, devtools
+  details, sessioninfo, devtools, readxl
 )
 
 options(digits = 3, scipen = 5)
@@ -53,12 +53,10 @@ Using the ADEMP+ framework we will:
 
 ```{r journalList, echo=FALSE, message=FALSE, warning=FALSE}
 
-# Read
-
 # Load journal lists
-jcr_stats <- read_csv("data/JCR_JournalResults_09_2022_Statistics_and_Probability.csv", skip = 2)
-jcr_eco <- read_csv( "data/JCR_JournalResults_09_2022_Ecology.csv", skip = 2)
-jcr_evo <- read_csv("data/JCR_JournalResults_09_2022_Evolutionary_Biology.csv", skip = 2)
+jcr_stats <- read_csv("data/JCR/JCR_JournalResults_09_2022_Statistics_and_Probability.csv", skip = 2)
+jcr_eco <- read_csv( "data/JCR/JCR_JournalResults_09_2022_Ecology.csv", skip = 2)
+jcr_evo <- read_csv("data/JCR/JCR_JournalResults_09_2022_Evolutionary_Biology.csv", skip = 2)
 
 # Clean: delete empty rows and comment lines at the end of files
 jcr_stats <- jcr_stats[which(!is.na(jcr_stats$ISSN)),]
@@ -66,23 +64,31 @@ jcr_eco <- jcr_eco[which(!is.na(jcr_eco$ISSN)),]
 jcr_evo <- jcr_evo[which(!is.na(jcr_evo$ISSN)),]
 
 
-# Check how many journals overlap between each journal group
-jcr_stats[which(jcr_stats$`Journal name` %in% jcr_eco$`Journal name`),]
-jcr_eco$`Journal name`[which(jcr_eco$`Journal name` %in% jcr_evo$`Journal name`)]
-jcr_evo$`Journal name`[which(jcr_evo$`Journal name` %in% jcr_eco$`Journal name`)]
+# Check how many journals overlap between each journal group: none with stats journal list, and 18 journals between eco and evo
+stats_in_eco <- jcr_stats[which(jcr_stats$`Journal name` %in% jcr_eco$`Journal name`),]
+stats_in_evo <- jcr_stats[which(jcr_stats$`Journal name` %in% jcr_evo$`Journal name`),]
+eco_in_evo <- jcr_eco$`Journal name`[which(jcr_eco$`Journal name` %in% jcr_evo$`Journal name`)]
+evo_in_eco <- jcr_evo$`Journal name`[which(jcr_evo$`Journal name` %in% jcr_eco$`Journal name`)]
 
-match_df(jcr_eco, jcr_evo)
+# get concatenated list of eco + evo journal lists
+ecoevo <- rbind(jcr_eco, jcr_evo)
 
-# # get list of matching and unique journals in eco and evo groups
-# ecoevo_match <- merge(jcr_eco[,-5], jcr_evo[,-5])
-# ecoevo_match$Category <- "Both"
-# ecoevo_notmatch <- ecoevo[which(!ecoevo$`Journal name` %in% ecoevo_match$`Journal name`),]
-# 
-# # get merged list of journals from eco and evo
-# ecoevo_merged <- rbind(ecoevo_match, ecoevo_notmatch)
-# 
-# # save results
-# write_csv(ecoevo_merged, "ecoevo_jcr_journal_list.csv", na="")
+############
+# IMPORTANT: modified merge() code below as of 20/09/2023, before this code was merging on all columns and only matched 15 journals and missed 3 journals that were overlapping.
+###########
+# get list of matching and unique journals in eco and evo groups
+ecoevo_match <- merge(jcr_eco, jcr_evo, by="Journal name")
+ecoevo_match$Category <- "Both"
+ecoevo_notmatch <- ecoevo[which(!ecoevo$`Journal name` %in% ecoevo_match$`Journal name`),]
+
+
+
+
+# get merged list of journals from eco and evo
+ecoevo_merged <- rbind(ecoevo_match, ecoevo_notmatch)
+
+# save results
+write_csv(ecoevo_merged, "ecoevo_jcr_journal_list.csv", na="")
 
 ```
 
@@ -109,7 +115,42 @@ Note, exclusion term criteria were added post-hoc.
 
 ![Caption for the picture.](data/img/fulltextscreening.png)
 
+
+# Data cleaning
+
+```{r}
+# Load text extraction
+survey <- read_excel("data/survey/simulationSurvey_extraction_103papers_21092023.xlsx")
+
+# remove excluded papers
+survey <- survey %>% filter(`Cross check`)
+
+```
+
+
+
 # Analysis
+
+### Reporting
+
+```{r}
+
+
+
+
+```
+
+
+### Characteristics
+
+
+
+## Reporting
+
+
+## Characteristics
+
+
 
 # Important points
 
