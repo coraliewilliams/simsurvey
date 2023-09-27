@@ -24,8 +24,8 @@ editor_options:
 #| code-fold: true
 
 pacman::p_load(
-  readr, dplyr, plyr, purrr, splitstackshape,
-  details, sessioninfo, devtools, readxl
+  rmarkdown, readr, dplyr, plyr, purrr, splitstackshape, tidyverse, tidyr, ggplot2,
+  vroom, details, sessioninfo, devtools, readxl, here
 )
 
 options(digits = 3, scipen = 5)
@@ -51,12 +51,13 @@ Using the ADEMP+ framework we will:
 
 ## Journal list
 
-```{r journalList, echo=FALSE, message=FALSE, warning=FALSE}
+```{r journalList, warning=F, message=F}
+
 
 # Load journal lists
-jcr_stats <- read_csv("data/JCR/JCR_JournalResults_09_2022_Statistics_and_Probability.csv", skip = 2)
-jcr_eco <- read_csv( "data/JCR/JCR_JournalResults_09_2022_Ecology.csv", skip = 2)
-jcr_evo <- read_csv("data/JCR/JCR_JournalResults_09_2022_Evolutionary_Biology.csv", skip = 2)
+jcr_stats <- read_csv("~/Projects/simsurvey/data/JCR/JCR_JournalResults_09_2022_Statistics_and_Probability.csv", skip = 2)
+jcr_eco <- read_csv("~/Projects/simsurvey/data/JCR/JCR_JournalResults_09_2022_Ecology.csv", skip = 2)
+jcr_evo <- read_csv("~/Projects/simsurvey/data/JCR/JCR_JournalResults_09_2022_Evolutionary_Biology.csv", skip = 2)
 
 # Clean: delete empty rows and comment lines at the end of files
 jcr_stats <- jcr_stats[which(!is.na(jcr_stats$ISSN)),]
@@ -74,25 +75,31 @@ evo_in_eco <- jcr_evo$`Journal name`[which(jcr_evo$`Journal name` %in% jcr_eco$`
 ecoevo <- rbind(jcr_eco, jcr_evo)
 
 ############
-# IMPORTANT: modified merge() code below as of 20/09/2023, before this code was merging on all columns and only matched 15 journals and missed 3 journals that were overlapping.
+# IMPORTANT: modified merge() code below as of 20/09/2023, before this code was merging on all columns and only matched 15 journals and missed 3 journals that were overlapping due to different values in "JIF Quartile" column
 ###########
-# get list of matching and unique journals in eco and evo groups
-ecoevo_match <- merge(jcr_eco, jcr_evo, by="Journal name")
+
+# get list of matching and unique journals between eco and evo groups
+ecoevo_match <- merge(jcr_eco[,-c(5,8)], jcr_evo[,-c(5,8)], by=c("Journal name","JCR Abbreviation", "ISSN", "eISSN", "Total Citations", "2021 JIF", "2021 JCI", "% of OA Gold"))
 ecoevo_match$Category <- "Both"
+ecoevo_match$`JIF Quartile` <- "NA"
 ecoevo_notmatch <- ecoevo[which(!ecoevo$`Journal name` %in% ecoevo_match$`Journal name`),]
-
-
 
 
 # get merged list of journals from eco and evo
 ecoevo_merged <- rbind(ecoevo_match, ecoevo_notmatch)
 
 # save results
-write_csv(ecoevo_merged, "ecoevo_jcr_journal_list.csv", na="")
+write_csv(ecoevo_merged, "~/Projects/simsurvey/data/ecoevo_jcr_journal_list.csv", na="")
 
 ```
 
 ## Search strings
+
+The custom search string was developed on 13/10/2022 on Web of Science
+
+::: {.callout-tip appearance="minimal" icon="false"}
+## **(TS=((simulation\*) AND ("method") AND ("compar" OR "evaluat" OR "validat" OR "statist") AND (bias OR coverag\* OR power OR convergence OR"standard error" OR "confidence interval" OR "performance measure" OR "mean error" OR "type I error"))) AND WC=("Ecology" OR "Evolutionary Biology"**
+:::
 
 ## Inclusion and exclusion criteria
 
@@ -109,25 +116,24 @@ Note, exclusion term criteria were added post-hoc.
 
 ### Abstract and title screening
 
-![Caption for the picture.](data/img/abstractscreening.png)
+![](~/Projects/simsurvey/data/img/abstractscreening.png)
 
 ### Full-text screening
 
-![Caption for the picture.](data/img/fulltextscreening.png)
-
+![](~/Projects/simsurvey/data/img/fulltextscreening.png)
 
 # Data cleaning
 
 ```{r}
 # Load text extraction
-survey <- read_excel("data/survey/simulationSurvey_extraction_103papers_21092023.xlsx")
+survey <- read_excel("~/Projects/simsurvey/data/survey/simulationSurvey_extraction_103papers_21092023.xlsx")
 
 # remove excluded papers
-survey <- survey %>% filter(`Cross check`)
+survey_test <- survey %>% filter(is.na(`Cross check`))
+
+
 
 ```
-
-
 
 # Analysis
 
@@ -140,17 +146,11 @@ survey <- survey %>% filter(`Cross check`)
 
 ```
 
-
 ### Characteristics
-
-
 
 ## Reporting
 
-
 ## Characteristics
-
-
 
 # Important points
 
