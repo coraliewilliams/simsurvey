@@ -1,5 +1,5 @@
 ---
-title: "Current Practices of Simulation Studies in Ecology and Evolutionary Biology for Statistical Method Evaluation"
+title: "Current Practices of Simulation Studies for Statistical Method Evaluation in Ecology and Evolutionary Biology"
 author: "Coralie Williams, Malgorzata Lagisz, Kyle Morrison, Lorenzo Ricolfi, Yefeng Yang, David Warton, and Shinichi Nakagawa"
 date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
 format:
@@ -24,8 +24,8 @@ editor_options:
 #| code-fold: true
 
 pacman::p_load(
-  rmarkdown, readr, dplyr, plyr, purrr, splitstackshape, tidyverse, tidyr, ggplot2,
-  vroom, details, sessioninfo, devtools, readxl, here
+  rmarkdown, readr, dplyr, purrr, splitstackshape, tidyverse, tidyr, ggplot2,
+  vroom, details, sessioninfo, devtools, readxl, forcats, stringr
 )
 
 options(digits = 3, scipen = 5)
@@ -33,7 +33,7 @@ options(digits = 3, scipen = 5)
 
 # Background
 
-Simulation studies hold a central role in evaluating statistical methodologies. Conducting a simulation study is an in-silico experiment, where the underlying process of generating the data is known, and the statistical performance can be assessed under diverse scenarios. Here, we present the findings from a survey of 100 research articles in ecology and evolutionary biology journals that use at least one simulation study to evaluate statistical methods.
+Simulation studies hold a central role in evaluating statistical methodologies. Conducting a simulation study is similar to an experiment. In a simulation study the underlying process of generating the data is known, and the statistical performance can be assessed under diverse scenarios. Here, we present the findings from a survey of 96 research articles in ecology and evolutionary biology journals that use at least one simulation study to evaluate statistical methods.
 
 A framework called ADEMP (Aims, Data-generating mechanisms, Methods, Estimand/statistical target, Performance measures) was introduced by Morris et al. (2019, Stat Med, 38, p2074), and provides key steps to plan, code, analyse, and report simulation studies.
 
@@ -74,9 +74,7 @@ evo_in_eco <- jcr_evo$`Journal name`[which(jcr_evo$`Journal name` %in% jcr_eco$`
 # get concatenated list of eco + evo journal lists
 ecoevo <- rbind(jcr_eco, jcr_evo)
 
-############
-# IMPORTANT: modified merge() code below as of 20/09/2023, before this code was merging on all columns and only matched 15 journals and missed 3 journals that were overlapping due to different values in "JIF Quartile" column
-###########
+## change in code below on 20/09/2023, before this code was merging on all columns and only matched 15 journals and missed 3 journals that were overlapping due to different values in "JIF Quartile" column
 
 # get list of matching and unique journals between eco and evo groups
 ecoevo_match <- merge(jcr_eco[,-c(5,8)], jcr_evo[,-c(5,8)], by=c("Journal name","JCR Abbreviation", "ISSN", "eISSN", "Total Citations", "2021 JIF", "2021 JCI", "% of OA Gold"))
@@ -112,28 +110,46 @@ The custom search string was developed on 13/10/2022 on Web of Science
 Note, exclusion term criteria were added post-hoc.
 :::
 
-## Screening
-
-### Abstract and title screening
-
-![](~/Projects/simsurvey/data/img/abstractscreening.png)
-
-### Full-text screening
-
-![](~/Projects/simsurvey/data/img/fulltextscreening.png)
 
 # Data cleaning
 
 ```{r}
 # Load text extraction
-survey <- read_excel("~/Projects/simsurvey/data/survey/simulationSurvey_extraction_103papers_21092023.xlsx")
+survey_raw <- read_excel("~/Projects/simsurvey/data/survey/simulationSurvey_extraction_103papers_21092023.xlsx", na=c("", "NA", NA))
 
 # remove excluded papers
-survey_test <- survey %>% filter(is.na(`Cross check`))
+survey <- survey_raw %>% filter(is.na(exclude))
 
+# remove questions that are comments
+survey <- survey %>% select(!matches("comment"))
+
+# names of reporting questions
+r <- c("1.1.aims_reporting", 
+       "2.1.datagen_reporting", 
+       "3.1.estimandtarget_reporting",
+       "4.1.method_reporting",
+       "5.1.perfmeasures_reporting",
+       "6.1.software_reporting",
+       "9.1.analysis_exploratory",
+       "10.1.analysis_perfmeasures_reporting",
+       "11.1.analysis_montecarlo_uncertainty")
+
+# names of reporting-section questions 
+rs <- c("1.2.aims_reportingsection", 
+        "2.2.datagen_reportingsection", 
+        "3.2.estimandtarget_reportingsection",
+        "4.2.method_reportingsection",
+        "5.2.perfmeasures_reportingsection",
+        "6.2.software_reportingsection",
+        "9.2.analysis_exploratory_reporting",
+        "10.2.analysis_perfmeasures_reportingsection",
+        "10.1.analysis_perfmeasures_reporting",
+        "11.2.analysis_montecarlo_reportingsection")
 
 
 ```
+
+
 
 # Analysis
 
@@ -141,16 +157,107 @@ survey_test <- survey %>% filter(is.na(`Cross check`))
 
 ```{r}
 
+# pivot longer all questions of "reporting" type
+r_long <- survey %>% 
+  select(all_of(r)) %>%
+  pivot_longer(cols = everything())
+
+# Counting the occurrences of each category within each question
+count_r <- r_long %>% 
+  group_by(name, value) %>% 
+  count()
+
+# Get total number of occurrences for each question
+count_r <- count_r %>% 
+  group_by(name) %>% 
+  mutate(total=sum(n))
+
+# Calculate proportion and percentage
+percent_r <- count_r %>% 
+  mutate(proportion = n/total,
+         percentage = proportion * 100)
+
+# Format order of questions
+percent_r$name <- factor(percent_r$name, levels=rev(r))
+percent_r$value <- replace_na(percent_r$value, "missing")
+percent_r$value <- factor(percent_r$value, levels=c("missing", "No", "Yes"))
 
 
+# Creating the plot
+fig1 <- ggplot(data = percent_r, aes(x = name, y = percentage, fill = value)) +
+  geom_col(width = 0.7, color = "black") +
+  coord_flip(ylim = c(0, 100)) +
+  scale_fill_manual(values = c("#E3E3E3", "#713979", "#4DAF4A")) +
+  theme(legend.position = "bottom", 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank()) +
+  ylab("Percentage (%)") +
+  xlab("Survey Question")
+fig1
 
 ```
+
+
+
+### Reporting section
+
+```{r}
+
+# pivot longer all questions of "reporting section" type
+rs_long <- survey %>% 
+  select(all_of(rs)) %>%
+  pivot_longer(cols = everything())
+
+# Counting the occurrences of each category within each question
+count_rs <- rs_long %>% 
+  group_by(name, value) %>% 
+  count()
+
+# Get total number of occurrences for each question
+count_rs <- count_rs %>% 
+  group_by(name) %>% 
+  mutate(total=sum(n))
+
+# Calculate proportion and percentage
+percent_rs <- count_rs %>% 
+  mutate(proportion = n/total,
+         percentage = proportion * 100)
+
+# Format order of questions
+percent_rs$name <- factor(percent_rs$name, levels=rev(rs))
+percent_rs$value <- replace_na(percent_rs$value, "missing")
+percent_rs$value <- factor(percent_rs$value, levels=c("missing", "No", "Yes"))
+
+
+# Creating the plot
+fig2 <- ggplot(data = percent_rs, aes(x = name, y = percentage, fill = value)) +
+  geom_col(width = 0.7, color = "black") +
+  coord_flip(ylim = c(0, 100)) +
+  scale_fill_manual(values = c("#E3E3E3", "#713979", "#4DAF4A")) +
+  theme(legend.position = "bottom", 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank()) +
+  ylab("Percentage (%)") +
+  xlab("Survey Question")
+fig2
+
+```
+
+
 
 ### Characteristics
 
 ## Reporting
 
+
+
+
+
 ## Characteristics
+
+
 
 # Important points
 
