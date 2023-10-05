@@ -146,6 +146,8 @@ rs <- c("1.2.aims_reportingsection",
         "10.1.analysis_perfmeasures_reporting",
         "11.2.analysis_montecarlo_reportingsection")
 
+# characteristics questions
+c <- c("")
 
 ```
 
@@ -249,6 +251,9 @@ fig2
 
 ### Characteristics
 
+```{r}
+# 
+```
 
 
 
