@@ -110,7 +110,6 @@ The custom search string was developed on 13/10/2022 on Web of Science
 Note, exclusion term criteria were added post-hoc.
 :::
 
-
 # Data cleaning
 
 ```{r}
@@ -146,16 +145,28 @@ rs <- c("1.2.aims_reportingsection",
         "10.1.analysis_perfmeasures_reporting",
         "11.2.analysis_montecarlo_reportingsection")
 
-# characteristics questions
-c <- c("")
-
 ```
-
-
 
 # Analysis
 
 ### Reporting
+
+The following questions were focused on simulation studies reporting quality:
+
+1.1.aims_reporting
+2.1.datagen_reporting
+2.4.datagen_informed
+3.1.estimandtarget_reporting
+4.1.method_reporting
+5.1.perfmeasures_reporting
+5.3.perfmeasures_lessknown
+6.1.software_reporting
+6.4.software_Rpackage
+7.1.code_datagen
+7.2.code_datagen_allsteps
+8.1.code_perfmeasures
+10.1.analysis_perfmeasures_reporting
+
 
 ```{r}
 
@@ -200,9 +211,23 @@ fig1
 
 ```
 
-
-
 ### Reporting section
+
+The following questions were focused on simulation studies reporting section:
+
+1.2.aims_reportingsection
+2.2.datagen_reportingsection
+2.5.2.datagen_parameters_section
+2.6.2.datagen_conditions_section
+2.7.2.datagen_simulationruns_section
+3.2.estimandtarget_reportingsection
+4.2.method_reportingsection
+5.2.perfmeasures_reportingsection
+6.2.software_reportingsection
+9.2.analysis_exploratory_reporting
+10.2.analysis_perfmeasures_reportingsection
+11.2.analysis_montecarlo_reportingsection
+
 
 ```{r}
 
@@ -247,17 +272,81 @@ fig2
 
 ```
 
-
-
 ### Characteristics
 
+The following questions were focused on simulation studies characteristics:
+
+1.3.aims_purpose
+2.3.datagen_type
+2.5.2.datagen_parameters
+2.6.1.datagen_conditions
+2.7.1.datagen_simulationruns
+2.8.datagen_distribution
+3.3.estimandtarget_type
+4.3.method_type
+5.4.perfmeasures
+6.3.software_type
+6.5.software_Rpackage_name
+7.3.code_datagen_basedonprevious
+9.1.analysis_exploratory
+11.1.analysis_montecarlo_uncertainty
+
+
 ```{r}
-# 
+###### 1: Aims
+table(survey$`1.3.aims_purpose`)
+
+survey <- survey %>%
+  mutate(`1.3.aims_purpose` = ifelse(`1.3.aims_purpose` == "Designing and/or planning of study;Evaluating analytical method", "Both", `1.3.aims_purpose`))
+
+
+# get percentages
+aims_sum <- survey %>%
+  group_by(`1.3.aims_purpose`) %>%
+  summarise(Count = n()) %>%
+  mutate(Percentage = (Count / sum(Count)) * 100)
+
+aims_sum <- aims_sum %>%
+  mutate(Label = paste(`1.3.aims_purpose`, sprintf("(%0.2f%%)", Percentage)))
+
+
+# plot histogram
+ggplot(survey, aes(x = `1.3.aims_purpose`)) +
+  geom_bar(aes(fill = `1.3.aims_purpose`)) +
+  scale_x_discrete(labels = setNames(aims_sum$Label, aims_sum$`1.3.aims_purpose`)) +
+  xlab("") +
+  ylab("Count") +
+  ggtitle("Aims and Purpose") +
+  scale_fill_brewer(palette="Set2") +
+  theme(
+    axis.text.x = element_text(angle = 30, hjust = 1, size = 12), # Increase text size and adjust angle
+    axis.text.y = element_text(size = 12),  # Increase text size for y-axis
+    axis.title.x = element_text(size = 12), # Increase title size for x-axis
+    axis.title.y = element_text(size = 12), # Increase title size for y-axis
+    panel.background = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_line(color = "grey50"),
+    panel.grid.minor.y = element_blank()
+  ) +
+  guides(fill=FALSE)
+
+
+
+###### 2: Data-generating mechanism
+table(survey$`2.3.datagen_type`)
+
+
+
+
+(survey$`2.8.datagen_distribution`)
+
+
+
+
+
+
 ```
-
-
-
-
 
 
 
@@ -268,6 +357,24 @@ fig2
 ### Example of MCMC studies
 
 Example of papers including an analaysis using Monte Carlo Markov Chain (MCMC)
+
+### Desirable properties of an estimator
+
+In statistics, an estimator is a function that is used to estimate a population parameter based on a sample of data. There are several desirable properties that an estimator may possess, including:
+
+-   **Unbiasedness:** An estimator is said to be unbiased if its expected value is equal to the true value of the population parameter being estimated. This means that, on average, the estimator will produce estimates that are close to the true value. $E[hat{θ}]=θ$
+
+-   **Consistency:** An estimator is said to be consistent if the difference between the estimated value and the true value of the population parameter tends to zero as the sample size increases. This means that the estimator will produce more accurate estimates as the amount of data used to estimate the parameter increases. $\hat{θ_n}→θ$ as $n→∞$
+
+-   **Efficiency:** An estimator is said to be efficient if it has a smaller variance than other estimators that are unbiased and consistent. This means that the estimator will produce estimates that are more precise, on average, than other estimators. $Var(\hat{θ})$
+
+
+Additionally, combinations:
+
+-   **Sufficiency:** An estimator is said to be sufficient if it is a function of all the relevant information in the data. This means that no other estimator can produce estimates that are more accurate, on average, than the sufficient estimator.
+
+-   **Robustness**: An estimator is robust if it remains relatively unbiased and efficient when the underlying assumptions of the model are violated.
+
 
 # References
 
