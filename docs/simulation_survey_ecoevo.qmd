@@ -325,6 +325,9 @@ The following questions were focused on simulation studies characteristics:
 
 11.1.analysis_montecarlo_uncertainty
 
+
+**Analysis of planning stage**
+
 ```{r}
 ###### 1: Aims
 table(survey$`1.3.aims_purpose`)
@@ -400,7 +403,48 @@ ggplot(survey, aes(x = `2.3.datagen_type`)) +
 
 ## Data generating type
 
-(survey$`2.8.datagen_distribution`)
+table(survey$`2.8.datagen_distribution`)
+
+# Function to categorise distribution types
+categorise_distribution <- function(dist_string) {
+  categories <- case_when(
+    grepl("normal", dist_string, ignore.case = TRUE) & !grepl("multivariate", dist_string, ignore.case = TRUE) ~ "Normal",
+    grepl("multivariate normal", dist_string, ignore.case = TRUE) ~ "Multivariate normal",
+    grepl("beta", dist_string, ignore.case = TRUE) ~ "Beta",
+    grepl("gamma", dist_string, ignore.case = TRUE) ~ "Gamma",
+    grepl("Poisson", dist_string, ignore.case = TRUE) ~ "Poisson",
+    grepl("binomial|bernoulli", dist_string, ignore.case = TRUE) ~ "Binomial",
+    grepl("dirichlet", dist_string, ignore.case = TRUE) ~ "Dirichlet",
+    grepl("uniform", dist_string, ignore.case = TRUE) ~ "Uniform",
+    grepl("exponential", dist_string, ignore.case = TRUE) ~ "Exponential"
+    #TRUE ~ "Other"
+  )
+  return(categories)
+}
+
+# Create long-format dataframe
+new <- survey %>%
+  # Separate each distribution type into a new row
+  separate_rows(`2.8.datagen_distribution`, sep = " and |, ") %>%
+  # Categorise each distribution type
+  mutate(category = categorise_distribution(`2.8.datagen_distribution`)) %>%
+  # Keep only relevant columns
+  select(paper_title, DOI, category)
+
+table(new$category)
+
+# Create the histogram plot
+ggplot(new, aes(x = category, fill = category)) +
+  geom_bar() +
+  scale_fill_brewer(palette = "Set2") +  # Color-blind friendly palette
+  theme_minimal() +
+  labs(
+    title = "Distribution of Data Generation Categories",
+    x = "Category",
+    y = "Frequency",
+    fill = "Category"
+  )
+
 
 
 
@@ -408,11 +452,64 @@ ggplot(survey, aes(x = `2.3.datagen_type`)) +
 ###### 3: Estimand/Target
 
 
+table(survey$`3.3.estimandtarget_type`)
+
+
 
 
 ###### 4: Method
 
+table(survey$`4.3.method_type`)
+
+
+
+
+
+###### 5: Performance measures
+
+table(survey$`5.4.perfmeasures`)
+
+
+
 ```
+
+
+**Analysis of coding stage**
+
+```{r}
+###### 6: Software
+
+
+
+
+
+###### 7: Code
+
+
+
+
+```
+
+
+
+**Analysis of analysis stage**
+
+
+```{r}
+
+
+###### 9: Case study/working example
+
+
+
+###### 10: Analysis performance measures
+
+
+
+
+###### 11: Monte Carlo error
+```
+
 
 # Important points
 
