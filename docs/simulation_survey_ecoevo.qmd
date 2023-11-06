@@ -325,11 +325,10 @@ The following questions were focused on simulation studies characteristics:
 
 11.1.analysis_montecarlo_uncertainty
 
-
 **Analysis of planning stage**
 
 ```{r}
-###### 1: Aims
+###### 1: Aims --------------------------------------------------------------------------------
 table(survey$`1.3.aims_purpose`)
 
 survey <- survey %>%
@@ -369,7 +368,7 @@ ggplot(survey, aes(x = `1.3.aims_purpose`)) +
 
 
 
-###### 2: Data-generating mechanism
+###### 2: Data-generating mechanism ----------------------------------------------------------------
 
 ## Data generating type
 table(survey$`2.3.datagen_type`)
@@ -401,63 +400,124 @@ ggplot(survey, aes(x = `2.3.datagen_type`)) +
 
 
 
-## Data generating type
+## Data generating type ------------------------------------------------
 
 table(survey$`2.8.datagen_distribution`)
 
-# Function to categorise distribution types
-categorise_distribution <- function(dist_string) {
-  categories <- case_when(
-    grepl("normal", dist_string, ignore.case = TRUE) & !grepl("multivariate", dist_string, ignore.case = TRUE) ~ "Normal",
-    grepl("multivariate normal", dist_string, ignore.case = TRUE) ~ "Multivariate normal",
-    grepl("beta", dist_string, ignore.case = TRUE) ~ "Beta",
-    grepl("gamma", dist_string, ignore.case = TRUE) ~ "Gamma",
-    grepl("Poisson", dist_string, ignore.case = TRUE) ~ "Poisson",
-    grepl("binomial|bernoulli", dist_string, ignore.case = TRUE) ~ "Binomial",
-    grepl("dirichlet", dist_string, ignore.case = TRUE) ~ "Dirichlet",
-    grepl("uniform", dist_string, ignore.case = TRUE) ~ "Uniform",
-    grepl("exponential", dist_string, ignore.case = TRUE) ~ "Exponential"
-    #TRUE ~ "Other"
-  )
-  return(categories)
+
+# Vector of distributions from your data
+dist_vector <- survey$`2.8.datagen_distribution`
+
+# format distribution vector
+dist_vector <- gsub("Binomial \\(includes\\/assumes Bernoulli\\)", "Binomial", dist_vector)
+
+
+#
+count_distributions <- function(dist_vector) {
+  
+  # Split the entries and unlist into a single vector 
+  dist_list <- unlist(strsplit(dist_vector, ";|,"))
+  dist_list <- trimws(dist_list)  # trim whitespace
+  
+  # Initialise counts for each distribution
+  counts <- table(tolower(dist_list))
+  
+  # Adjust counts for 'normal' by excluding 'multivariate normal' and 'truncated normal'
+  counts["normal"] <- counts["normal"] - counts["multivariate normal"] - counts["truncated normal"]
+  
+  # Counts for 'binomial' 
+  counts["binomial"] <- counts["binomial"] + counts["uniform/binomial"] + counts["negative binomial"]  + counts["beta binomial"]
+  
+  # Counts for 'uniform' 
+  counts["uniform"] <- counts["uniform"] + counts["unif"]
+  
+  # Counts for 'exponential' 
+  counts["exponential"] <- counts["exponential"] + counts["cubed exponential"]
+  
+  # Replace counts of distributions not listed with "Other" or "NA"
+  known_distributions <- c("normal", "multivariate normal", "truncated normal", "beta", "dirichlet", 
+                           "gamma", "poisson", "binomial", "uniform", "exponential", "no parametric distribution used")
+  counts <- counts[known_distributions]
+  
+  # Sum all other distributions into "Other"
+  counts["other"] <- sum(counts[!names(counts) %in% known_distributions])
+  
+  # Count "NA" if present
+  counts["na"] <- sum(dist_list == "NA", na.rm = TRUE)
+  
+  # Return the counts
+  return(counts)
 }
 
-# Create long-format dataframe
-new <- survey %>%
-  # Separate each distribution type into a new row
-  separate_rows(`2.8.datagen_distribution`, sep = " and |, ") %>%
-  # Categorise each distribution type
-  mutate(category = categorise_distribution(`2.8.datagen_distribution`)) %>%
-  # Keep only relevant columns
-  select(paper_title, DOI, category)
-
-table(new$category)
-
-# Create the histogram plot
-ggplot(new, aes(x = category, fill = category)) +
-  geom_bar() +
-  scale_fill_brewer(palette = "Set2") +  # Color-blind friendly palette
-  theme_minimal() +
-  labs(
-    title = "Distribution of Data Generation Categories",
-    x = "Category",
-    y = "Frequency",
-    fill = "Category"
+# old code
+# not sure how to treat "beta binomial" and total normal and total binomial
+counts <- c(
+    "Normal" = length(grep("normal", dist_vector, ignore.case = TRUE)) - length(grep("multivariate normal", dist_vector, ignore.case = TRUE)) - length(grep("truncated normal", dist_vector, ignore.case = TRUE)),
+    "Multivariate normal" = length(grep("multivariate normal", dist_vector, ignore.case = TRUE)),
+    "Truncated normal" = length(grep("truncated", dist_vector, ignore.case = TRUE)),
+    "Beta" = length(grep("beta", dist_vector, ignore.case = TRUE)),
+    "Dirichlet" = length(grep("dirichl", dist_vector, ignore.case = TRUE)),
+    "Gamma" = length(grep("gamma", dist_vector, ignore.case = TRUE)),
+    "Poisson" = length(grep("poisson", dist_vector, ignore.case = TRUE)),
+    "Binomial" = length(grep("binomial", dist_vector, ignore.case = TRUE)),
+    "Uniform" = length(grep("uniform", dist_vector, ignore.case = TRUE)),
+    "Exponential" = length(grep("exponential", dist_vector, ignore.case = TRUE)),
+    "Other" = length(grep("Other", dist_vector, ignore.case = TRUE, value=T))
   )
 
 
 
+# Example usage:
+dist_vector <- survey$`2.8.datagen_distribution`
+count_distributions(dist_vector)
 
 
-###### 3: Estimand/Target
+# Get counts of distributions
+distribution_counts <- count_distributions(dist_vector)
 
+# Convert counts to dataframe for ggplot and reorder the factor levels by Counts
+df_distribution_counts <- data.frame(
+  Distribution = factor(names(distribution_counts), 
+                        levels = names(distribution_counts)[order(distribution_counts,decreasing = TRUE)]),
+  Counts = as.integer(distribution_counts)
+)
+
+# set up color palette with 12 colors
+library(RColorBrewer)
+display.brewer.pal(n = 12, name = 'Paired')
+                   
+                   
+# Plot histogram with ordered distributions
+ggplot(df_distribution_counts, aes(x = Distribution, y = Counts, fill = Distribution)) +
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette = "Set3") +
+  theme_minimal() +
+  labs(title = "Statistical Distributions", x = "Distribution", y = "Counts") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+###### 3: Estimand/Target ----------------------------------------------------------
+
+# not sure if we should count each time it is mentioned as separate (percentage per Target Type)
+# or specify the per article (different categories: both, all three, all four...)
+
+### Version 1
 
 table(survey$`3.3.estimandtarget_type`)
 
+# create new variable "both"
+
+# Split the entries and unlist into a single vector 
+estimand_list <- unlist(strsplit(survey$`3.3.estimandtarget_type`, ";"))
+
+
+### Version 2
 
 
 
-###### 4: Method
+###### 4: Method -------------------------------------------------------------------
 
 table(survey$`4.3.method_type`)
 
@@ -465,7 +525,7 @@ table(survey$`4.3.method_type`)
 
 
 
-###### 5: Performance measures
+###### 5: Performance measures -----------------------------------------------------
 
 table(survey$`5.4.perfmeasures`)
 
@@ -473,8 +533,10 @@ table(survey$`5.4.perfmeasures`)
 
 ```
 
-
 **Analysis of coding stage**
+
+
+
 
 ```{r}
 ###### 6: Software
@@ -490,10 +552,7 @@ table(survey$`5.4.perfmeasures`)
 
 ```
 
-
-
 **Analysis of analysis stage**
-
 
 ```{r}
 
@@ -509,7 +568,6 @@ table(survey$`5.4.perfmeasures`)
 
 ###### 11: Monte Carlo error
 ```
-
 
 # Important points
 
