@@ -25,7 +25,7 @@ editor_options:
 
 pacman::p_load(
   rmarkdown, readr, dplyr, purrr, splitstackshape, tidyverse, tidyr, ggplot2,
-  vroom, details, sessioninfo, devtools, readxl, forcats, stringr
+  vroom, details, sessioninfo, devtools, readxl, forcats, stringr, RColorBrewer
 )
 
 options(digits = 3, scipen = 5)
@@ -96,7 +96,7 @@ write_csv(ecoevo_merged, "~/Projects/simsurvey/data/ecoevo_jcr_journal_list.csv"
 The custom search string was developed on 13/10/2022 on Web of Science
 
 ::: {.callout-tip appearance="minimal" icon="false"}
-## **(TS=((simulation\*) AND ("method") AND ("compar" OR "evaluat" OR "validat" OR "statist") AND (bias OR coverag\* OR power OR convergence OR"standard error" OR "confidence interval" OR "performance measure" OR "mean error" OR "type I error"))) AND WC=("Ecology" OR "Evolutionary Biology"**
+**(TS=((simulation\*) AND ("method") AND ("compar" OR "evaluat" OR "validat" OR "statist") AND (bias OR coverag\* OR power OR convergence OR"standard error" OR "confidence interval" OR "performance measure" OR "mean error" OR "type I error"))) AND WC=("Ecology" OR "Evolutionary Biology"**
 :::
 
 ## Inclusion and exclusion criteria
@@ -153,31 +153,30 @@ rs <- c("1.2.aims_reportingsection",
 
 The following questions were focused on simulation studies reporting quality:
 
-1.1.aims_reporting
+`1.1.aims_reporting` Are the aims of the simulation defined?
 
-2.1.datagen_reporting
+`2.1.datagen_reporting` Is the data-generating mechanisms described? 
 
-2.4.datagen_informed
+`2.4.datagen_informed`	Are the specifications of the data-generating mechanisms informed (i.e. justified with a reference or narrative justification)?
 
-3.1.estimandtarget_reporting
+`3.1.estimandtarget_reporting`	Were the estimand(s), statistical target and task of the simulation study described?
 
-4.1.method_reporting
+`4.1.method_reporting`	Is the study citing other relevant statistical methodology literature on the topic?
 
-5.1.perfmeasures_reporting
+`5.1.perfmeasures_reporting` Were all performance measures planned to be investigated defined or described?
 
-5.3.perfmeasures_lessknown
+`5.3.perfmeasures_lessknown`	If a performance measure planned to be used is less-known, was the formula given explicitly?
 
-6.1.software_reporting
+`6.1.software_reporting`	Is/Are all software(s) and all package(s) used in the simulation study reported explicitly?
 
-6.4.software_Rpackage
+`6.4.software_Rpackage` If R statistical software was used, were the packages that were used reported?
 
-7.1.code_datagen
+`7.1.code_datagen`	Is the code to execute the simulation study made available?
 
-7.2.code_datagen_allsteps
+`7.2.code_datagen_allsteps`	Does the code include data generating and analysis simulation steps?
 
-8.1.code_perfmeasures
+`8.1.code_perfmeasures`	Is the code to obtain performance measures made available?
 
-10.1.analysis_perfmeasures_reporting
 
 ```{r}
 
@@ -203,8 +202,8 @@ percent_r <- count_r %>%
 
 # Format order of questions
 percent_r$name <- factor(percent_r$name, levels=rev(r))
-percent_r$value <- replace_na(percent_r$value, "missing")
-percent_r$value <- factor(percent_r$value, levels=c("missing", "No", "Yes"))
+percent_r$value <- replace_na(percent_r$value, "N.A.")
+percent_r$value <- factor(percent_r$value, levels=c("N.A.", "No", "Yes"))
 
 
 # Creating the plot
@@ -226,29 +225,30 @@ fig1
 
 The following questions were focused on simulation studies reporting section:
 
-1.2.aims_reportingsection
+`1.2.aims_reportingsection`	Are the aims of the simulation study defined in the Introduction or Methods section?
 
-2.2.datagen_reportingsection
+`2.2.datagen_reportingsection`	Is the data-generating mechanisms described in the Methods section?
 
-2.5.2.datagen_parameters_section
+`2.5.2.datagen_parameters_section`	Are the varying parameters reported explicitly in the Methods section?
 
-2.6.2.datagen_conditions_section
+`2.6.2.datagen_conditions_section`	Are the number of conditions reported explicitly in the Methods section?
 
-2.7.2.datagen_simulationruns_section
+`2.7.2.datagen_simulationruns_section`	Are the number simulation runs reported explicitly in the Methods section?
 
-3.2.estimandtarget_reportingsection
+`3.2.estimandtarget_reportingsection`	Is/Are the estimands or statistical targets/task described in the Methods section?
 
-4.2.method_reportingsection
+`4.2.method_reportingsection`	Is the study citing other relevant statistical methodology in the Introduction and/or Methods?
 
-5.2.perfmeasures_reportingsection
+`5.2.perfmeasures_reportingsection`	Were performance measures planned to be investigated defined or described in the Methods section?
 
-6.2.software_reportingsection
+`6.2.software_reportingsection`	Were the software(s) and package(s) used in the simulation study reported in Methods or Results section?
 
-9.2.analysis_exploratory_reporting
+`9.2.analysis_exploratory_reporting` Was a working example or case study reported in the Results or Supplementary Material section?
 
-10.2.analysis_perfmeasures_reportingsection
+`10.2.analysis_perfmeasures_reportingsection`	Were all performance measures results reported in the Results or Supplementary Material? 
 
-11.2.analysis_montecarlo_reportingsection
+`11.2.analysis_montecarlo_reportingsection`	Are Monte Carlo error reported in the Results or Supplementary Material section?
+
 
 ```{r}
 
@@ -274,8 +274,8 @@ percent_rs <- count_rs %>%
 
 # Format order of questions
 percent_rs$name <- factor(percent_rs$name, levels=rev(rs))
-percent_rs$value <- replace_na(percent_rs$value, "missing")
-percent_rs$value <- factor(percent_rs$value, levels=c("missing", "No", "Yes"))
+percent_rs$value <- replace_na(percent_rs$value, "N.A.")
+percent_rs$value <- factor(percent_rs$value, levels=c("N.A.", "No", "Yes"))
 
 
 # Creating the plot
@@ -297,39 +297,32 @@ fig2
 
 The following questions were focused on simulation studies characteristics:
 
-1.3.aims_purpose
-
-2.3.datagen_type
-
-2.5.2.datagen_parameters
-
-2.6.1.datagen_conditions
-
-2.7.1.datagen_simulationruns
-
-2.8.datagen_distribution
-
-3.3.estimandtarget_type
-
-4.3.method_type
-
-5.4.perfmeasures
-
-6.3.software_type
-
-6.5.software_Rpackage_name
-
-7.3.code_datagen_basedonprevious
-
-9.1.analysis_exploratory
-
-11.1.analysis_montecarlo_uncertainty
-
 **Analysis of planning stage**
+
+`1.3.aims_purpose`	What is the purpose of the simulation study?
+
+`2.3.datagen_type`	 What type of data-generating mechanism was used?
+
+`2.5.2.datagen_parameters`	How many varying parameters were used in data-generating mechanisms?
+
+`2.6.1.datagen_conditions`	How many conditions were used in total in the simulation study? (varying parameter combination)
+
+`2.7.1.datagen_simulationruns`	What is the number of simulation runs performed? (report the maximum number used)
+
+`2.8.datagen_distribution`	If a parametric model was used, what was/were the distribution type(s) used?  
+
+`3.3.estimandtarget_type`	What is/are the estimands or statistical targets/task of the simulation study?
+
+`4.3.method_type`	What is the simulation study evaluating? 
+
+`5.4.perfmeasures`	What performance measure(s) were planned to be investigated in the simulation study? 
+
+
 
 ```{r}
 ###### 1: Aims --------------------------------------------------------------------------------
-table(survey$`1.3.aims_purpose`)
+
+#table(survey$`1.3.aims_purpose`)
 
 survey <- survey %>%
   mutate(`1.3.aims_purpose` = ifelse(`1.3.aims_purpose` == "Designing and/or planning of study;Evaluating analytical method", "Both", `1.3.aims_purpose`))
@@ -341,8 +334,15 @@ aims_sum <- survey %>%
   summarise(Count = n()) %>%
   mutate(Percentage = (Count / sum(Count)) * 100)
 
+# update labels
 aims_sum <- aims_sum %>%
   mutate(Label = paste(`1.3.aims_purpose`, sprintf("(%0.2f%%)", Percentage)))
+
+
+# re-order levels
+survey$`1.3.aims_purpose` <- factor(survey$`1.3.aims_purpose`, levels=c("Evaluating analytical method",
+                                           "Designing and/or planning of study",
+                                           "Both"))
 
 
 # plot histogram
@@ -354,7 +354,7 @@ ggplot(survey, aes(x = `1.3.aims_purpose`)) +
   ggtitle("Aims and Purpose") +
   scale_fill_brewer(palette="Set2") +
   theme(
-    axis.text.x = element_text(angle = 30, hjust = 1, size = 12), 
+    axis.text.x = element_text(angle = 40, hjust = 1, size = 12), 
     axis.text.y = element_text(size = 12),  
     axis.title.x = element_text(size = 12), 
     axis.title.y = element_text(size = 12), 
@@ -366,17 +366,24 @@ ggplot(survey, aes(x = `1.3.aims_purpose`)) +
   ) +
   guides(fill=FALSE)
 
+```
 
-
+```{r}
 ###### 2: Data-generating mechanism ----------------------------------------------------------------
 
-## Data generating type
-table(survey$`2.3.datagen_type`)
+####### Type #######
 
+#table(survey$`2.3.datagen_type`)
+
+# rename level
 survey <- survey %>%
-  mutate(`2.3.datagen_type` = ifelse(`2.3.datagen_type` == "Parametric model (\"known\");Resampling method (\"unknown\")",
-                                     "Both", `2.3.datagen_type`))
+  mutate(`2.3.datagen_type` = ifelse(`2.3.datagen_type` == "Parametric model (\"known\");Resampling method (\"unknown\")","Both", `2.3.datagen_type`))
 
+
+# re-order levels
+survey$`2.3.datagen_type` <-factor(survey$`2.3.datagen_type`, levels=c("Parametric model (\"known\")",
+                                           "Resampling method (\"unknown\")",
+                                           "Both"))
 
 # plot histogram
 ggplot(survey, aes(x = `2.3.datagen_type`)) +
@@ -384,9 +391,9 @@ ggplot(survey, aes(x = `2.3.datagen_type`)) +
   xlab("") +
   ylab("Count") +
   ggtitle("Data-generating mechanism") +
-  scale_fill_brewer(palette="Set2") +
+  scale_fill_brewer(palette="Set3") +
   theme(
-    axis.text.x = element_text(angle = 10, hjust=1, size = 9), 
+    axis.text.x = element_text(angle = 40, hjust=1, size = 12), 
     axis.text.y = element_text(size = 12),  
     axis.title.x = element_text(size = 12), 
     axis.title.y = element_text(size = 12), 
@@ -400,26 +407,27 @@ ggplot(survey, aes(x = `2.3.datagen_type`)) +
 
 
 
-## Data generating type ------------------------------------------------
 
-table(survey$`2.8.datagen_distribution`)
+####### Distribution #######
 
+#table(survey$`2.8.datagen_distribution`)
 
-# Vector of distributions from your data
 dist_vector <- survey$`2.8.datagen_distribution`
+
+
+##------ Version 1 (no breakdown summarise binomial and normal as one)
 
 # format distribution vector
 dist_vector <- gsub("Binomial \\(includes\\/assumes Bernoulli\\)", "Binomial", dist_vector)
 
-
-#
+# make function
 count_distributions <- function(dist_vector) {
   
   # Split the entries and unlist into a single vector 
   dist_list <- unlist(strsplit(dist_vector, ";|,"))
   dist_list <- trimws(dist_list)  # trim whitespace
   
-  # Initialise counts for each distribution
+  # counts for each distribution
   counts <- table(tolower(dist_list))
   
   # Adjust counts for 'normal' by excluding 'multivariate normal' and 'truncated normal'
@@ -449,21 +457,6 @@ count_distributions <- function(dist_vector) {
   return(counts)
 }
 
-# old code
-# not sure how to treat "beta binomial" and total normal and total binomial
-counts <- c(
-    "Normal" = length(grep("normal", dist_vector, ignore.case = TRUE)) - length(grep("multivariate normal", dist_vector, ignore.case = TRUE)) - length(grep("truncated normal", dist_vector, ignore.case = TRUE)),
-    "Multivariate normal" = length(grep("multivariate normal", dist_vector, ignore.case = TRUE)),
-    "Truncated normal" = length(grep("truncated", dist_vector, ignore.case = TRUE)),
-    "Beta" = length(grep("beta", dist_vector, ignore.case = TRUE)),
-    "Dirichlet" = length(grep("dirichl", dist_vector, ignore.case = TRUE)),
-    "Gamma" = length(grep("gamma", dist_vector, ignore.case = TRUE)),
-    "Poisson" = length(grep("poisson", dist_vector, ignore.case = TRUE)),
-    "Binomial" = length(grep("binomial", dist_vector, ignore.case = TRUE)),
-    "Uniform" = length(grep("uniform", dist_vector, ignore.case = TRUE)),
-    "Exponential" = length(grep("exponential", dist_vector, ignore.case = TRUE)),
-    "Other" = length(grep("Other", dist_vector, ignore.case = TRUE, value=T))
-  )
 
 
 
@@ -482,30 +475,58 @@ df_distribution_counts <- data.frame(
   Counts = as.integer(distribution_counts)
 )
 
-# set up color palette with 12 colors
-library(RColorBrewer)
-display.brewer.pal(n = 12, name = 'Paired')
-                   
                    
 # Plot histogram with ordered distributions
 ggplot(df_distribution_counts, aes(x = Distribution, y = Counts, fill = Distribution)) +
   geom_bar(stat = "identity") +
   scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
-  labs(title = "Statistical Distributions", x = "Distribution", y = "Counts") +
+  labs(title = "Statistical Distributions (version grouped)", x = "Distribution", y = "Counts") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 
+
+## ---------- Version 2 (breakdown for each binomial and normal)
+
+# old code
+# not sure how to treat "beta binomial" => total normal and total binomial or breakdown??
+counts <- c(
+    "Multivariate normal" = length(grep("multivariate normal", dist_vector, ignore.case = TRUE)),
+    "Truncated normal" = length(grep("truncated", dist_vector, ignore.case = TRUE)),
+    "Beta" = length(grep("beta", dist_vector, ignore.case = TRUE)),
+    "Dirichlet" = length(grep("dirichl", dist_vector, ignore.case = TRUE)),
+    "Gamma" = length(grep("gamma", dist_vector, ignore.case = TRUE)),
+    "Poisson" = length(grep("poisson", dist_vector, ignore.case = TRUE)),
+    "Binomial" = length(grep("binomial", dist_vector, ignore.case = TRUE)),
+    "Uniform" = length(grep("uniform", dist_vector, ignore.case = TRUE)),
+    "Exponential" = length(grep("exponential", dist_vector, ignore.case = TRUE)),
+    "Other" = length(grep("Other", dist_vector, ignore.case = TRUE, value=T))
+  )
+
+
+
+# Plot histogram with ordered distributions
+ggplot(df_distribution_counts, aes(x = Distribution, y = Counts, fill = Distribution)) +
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette = "Set3") +
+  theme_minimal() +
+  labs(title = "Statistical Distributions (version with breakdown)", x = "Distribution", y = "Counts") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+```{r}
 
 ###### 3: Estimand/Target ----------------------------------------------------------
 
 # not sure if we should count each time it is mentioned as separate (percentage per Target Type)
 # or specify the per article (different categories: both, all three, all four...)
 
-### Version 1
+### Version 1 (count of all)
 
-table(survey$`3.3.estimandtarget_type`)
+#table(survey$`3.3.estimandtarget_type`)
 
 # create new variable "both"
 
@@ -513,13 +534,13 @@ table(survey$`3.3.estimandtarget_type`)
 estimand_list <- unlist(strsplit(survey$`3.3.estimandtarget_type`, ";"))
 
 
-### Version 2
+### Version 2 (paper specific )
 
-
+table(survey$`3.3.estimandtarget_type`)
 
 ###### 4: Method -------------------------------------------------------------------
 
-table(survey$`4.3.method_type`)
+#table(survey$`4.3.method_type`)
 
 
 
@@ -527,7 +548,7 @@ table(survey$`4.3.method_type`)
 
 ###### 5: Performance measures -----------------------------------------------------
 
-table(survey$`5.4.perfmeasures`)
+#table(survey$`5.4.perfmeasures`)
 
 
 
@@ -535,16 +556,32 @@ table(survey$`5.4.perfmeasures`)
 
 **Analysis of coding stage**
 
+`6.3.software_type`	  What software(s) was used to run the simulation study? 
 
+`6.5.software_Rpackage_name`	  If an R package was reported, detail which one(s)
+
+`7.3.code_datagen_basedonprevious`	  Was the code of the data generating mechanism inspired or expanded from another simulation study code?
 
 
 ```{r}
-###### 6: Software
+###### 6: Software type
+
+#table(survey$`6.3.software_type`)
+
+# Software list
+software_list <- unlist(strsplit(survey$`6.3.software_type`, ";"))
 
 
 
 
+###### 6: Software R package
 
+
+
+
+```
+
+```{r}
 ###### 7: Code
 
 
@@ -553,6 +590,12 @@ table(survey$`5.4.perfmeasures`)
 ```
 
 **Analysis of analysis stage**
+
+`9.1.analysis_exploratory`	  Was a working example or case study conducted?
+
+`10.1.analysis_perfmeasures_reporting`	  Were all performance measures results reported graphically or in tabular format? 
+
+`11.1.analysis_montecarlo_uncertainty`	  Are Monte Carlo error quantified to assess the simulation uncertainty? (by running the same simulation under different number of random-number seeds)
 
 ```{r}
 
