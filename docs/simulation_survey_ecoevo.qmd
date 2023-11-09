@@ -122,7 +122,7 @@ survey <- survey_raw %>% filter(is.na(exclude))
 # remove questions that are comments
 survey <- survey %>% select(!matches("comment"))
 
-# names of reporting questions
+# Names of reporting questions -------------------
 r <- c("1.1.aims_reporting", 
        "2.1.datagen_reporting", 
        "3.1.estimandtarget_reporting",
@@ -133,7 +133,23 @@ r <- c("1.1.aims_reporting",
        "10.1.analysis_perfmeasures_reporting",
        "11.1.analysis_montecarlo_uncertainty")
 
-# names of reporting-section questions 
+# only planning stage 
+r1 <- c("1.1.aims_reporting", 
+       "2.1.datagen_reporting", 
+       "3.1.estimandtarget_reporting",
+       "4.1.method_reporting",
+       "5.1.perfmeasures_reporting")
+
+# only coding stage
+r2 <- c("6.1.software_reporting")
+
+# only analysis stage
+r3 <- c("9.1.analysis_exploratory",
+       "10.1.analysis_perfmeasures_reporting",
+       "11.1.analysis_montecarlo_uncertainty")
+
+
+# names of reporting-section questions ------------
 rs <- c("1.2.aims_reportingsection", 
         "2.2.datagen_reportingsection", 
         "3.2.estimandtarget_reportingsection",
@@ -141,6 +157,22 @@ rs <- c("1.2.aims_reportingsection",
         "5.2.perfmeasures_reportingsection",
         "6.2.software_reportingsection",
         "9.2.analysis_exploratory_reporting",
+        "10.2.analysis_perfmeasures_reportingsection",
+        "10.1.analysis_perfmeasures_reporting",
+        "11.2.analysis_montecarlo_reportingsection")
+
+# only planning stage
+rs1 <- c("1.2.aims_reportingsection", 
+        "2.2.datagen_reportingsection", 
+        "3.2.estimandtarget_reportingsection",
+        "4.2.method_reportingsection",
+        "5.2.perfmeasures_reportingsection")
+
+# coding stage
+rs2 <- c("6.2.software_reportingsection")
+
+# analysis stage
+rs3 <- c("9.2.analysis_exploratory_reporting",
         "10.2.analysis_perfmeasures_reportingsection",
         "10.1.analysis_perfmeasures_reporting",
         "11.2.analysis_montecarlo_reportingsection")
@@ -180,44 +212,53 @@ The following questions were focused on simulation studies reporting quality:
 
 ```{r}
 
-# pivot longer all questions of "reporting" type
-r_long <- survey %>% 
-  select(all_of(r)) %>%
-  pivot_longer(cols = everything())
+# Function to make horizontal histogram of reporting practices questions
+create_plot <- function(survey, r_vector, title) {
+  r_long <- survey %>% 
+    select(all_of(r_vector)) %>%
+    pivot_longer(cols = everything())
 
-# Counting the occurrences of each category within each question
-count_r <- r_long %>% 
-  group_by(name, value) %>% 
-  count()
+  count_r <- r_long %>% 
+    group_by(name, value) %>% 
+    count()
 
-# Get total number of occurrences for each question
-count_r <- count_r %>% 
-  group_by(name) %>% 
-  mutate(total=sum(n))
+  count_r <- count_r %>% 
+    group_by(name) %>% 
+    mutate(total=sum(n))
 
-# Calculate proportion and percentage
-percent_r <- count_r %>% 
-  mutate(proportion = n/total,
-         percentage = proportion * 100)
+  percent_r <- count_r %>% 
+    mutate(proportion = n/total,
+           percentage = proportion * 100)
 
-# Format order of questions
-percent_r$name <- factor(percent_r$name, levels=rev(r))
-percent_r$value <- replace_na(percent_r$value, "N.A.")
-percent_r$value <- factor(percent_r$value, levels=c("N.A.", "No", "Yes"))
+  percent_r$name <- factor(percent_r$name, levels=rev(r_vector))
+  percent_r$value <- replace_na(percent_r$value, "N.A.")
+  percent_r$value <- factor(percent_r$value, levels=c("N.A.", "No", "Yes"))
 
+  
+  ggplot(data = percent_r, aes(x = name, y = percentage, fill = value)) +
+    geom_col(width = 0.7, color = "black") +
+    coord_flip(ylim = c(0, 100)) +
+    scale_fill_manual(values = c("N.A."="#E3E3E3", "No"="#713979", "Yes"="#4DAF4A")) +
+    theme(legend.position = "bottom", 
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank()) +
+    ggtitle(title) +
+    ylab("Percentage (%)") +
+    xlab("Survey Question")
+}
 
-# Creating the plot
-fig1 <- ggplot(data = percent_r, aes(x = name, y = percentage, fill = value)) +
-  geom_col(width = 0.7, color = "black") +
-  coord_flip(ylim = c(0, 100)) +
-  scale_fill_manual(values = c("#E3E3E3", "#713979", "#4DAF4A")) +
-  theme(legend.position = "bottom", 
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank()) +
-  ylab("Percentage (%)") +
-  xlab("Survey Question")
-fig1
+# Apply the function to each question group
+fig1 <- create_plot(survey, r1, "Reporting in planning stage")
+fig2 <- create_plot(survey, r2, "Reporting in coding stage")
+fig3 <- create_plot(survey, r3, "Reporting in analysis stage")
+supp1 <- create_plot(survey, r, "Reporting practices")
+
+# Plot the figures
+print(fig1)
+print(fig2)
+print(fig3)
+print(supp1)
 
 ```
 
@@ -252,46 +293,19 @@ The following questions were focused on simulation studies reporting section:
 
 ```{r}
 
-# pivot longer all questions of "reporting section" type
-rs_long <- survey %>% 
-  select(all_of(rs)) %>%
-  pivot_longer(cols = everything())
+# Apply the function to each question group
+fig4 <- create_plot(survey, rs1, "Reporting section for planning stage")
+fig5 <- create_plot(survey, rs2, "Reporting in coding stage")
+fig6 <- create_plot(survey, rs3, "Reporting in analysis stage")
+supp2 <- create_plot(survey, rs, "Reporting practices")
 
-# Counting the occurrences of each category within each question
-count_rs <- rs_long %>% 
-  group_by(name, value) %>% 
-  count()
-
-# Get total number of occurrences for each question
-count_rs <- count_rs %>% 
-  group_by(name) %>% 
-  mutate(total=sum(n))
-
-# Calculate proportion and percentage
-percent_rs <- count_rs %>% 
-  mutate(proportion = n/total,
-         percentage = proportion * 100)
-
-# Format order of questions
-percent_rs$name <- factor(percent_rs$name, levels=rev(rs))
-percent_rs$value <- replace_na(percent_rs$value, "N.A.")
-percent_rs$value <- factor(percent_rs$value, levels=c("N.A.", "No", "Yes"))
-
-
-# Creating the plot
-fig2 <- ggplot(data = percent_rs, aes(x = name, y = percentage, fill = value)) +
-  geom_col(width = 0.7, color = "black") +
-  coord_flip(ylim = c(0, 100)) +
-  scale_fill_manual(values = c("#E3E3E3", "#713979", "#4DAF4A")) +
-  theme(legend.position = "bottom", 
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank()) +
-  ylab("Percentage (%)") +
-  xlab("Survey Question")
-fig2
-
+# Plot the figures
+print(fig4)
+print(fig5)
+print(fig6)
+print(supp2)
 ```
+
 
 ### Characteristics
 
@@ -462,7 +476,7 @@ count_distributions <- function(dist_vector) {
 
 # Example usage:
 dist_vector <- survey$`2.8.datagen_distribution`
-count_distributions(dist_vector)
+#count_distributions(dist_vector)
 
 
 # Get counts of distributions
@@ -517,12 +531,14 @@ ggplot(df_distribution_counts, aes(x = Distribution, y = Counts, fill = Distribu
 
 ```
 
+
 ```{r}
 
 ###### 3: Estimand/Target ----------------------------------------------------------
 
 # not sure if we should count each time it is mentioned as separate (percentage per Target Type)
 # or specify the per article (different categories: both, all three, all four...)
+
 
 ### Version 1 (count of all)
 
@@ -534,9 +550,15 @@ ggplot(df_distribution_counts, aes(x = Distribution, y = Counts, fill = Distribu
 estimand_list <- unlist(strsplit(survey$`3.3.estimandtarget_type`, ";"))
 
 
+
 ### Version 2 (paper specific )
 
-table(survey$`3.3.estimandtarget_type`)
+#table(survey$`3.3.estimandtarget_type`)
+
+
+
+
+
 
 ###### 4: Method -------------------------------------------------------------------
 
@@ -593,23 +615,36 @@ software_list <- unlist(strsplit(survey$`6.3.software_type`, ";"))
 
 `9.1.analysis_exploratory`	  Was a working example or case study conducted?
 
-`10.1.analysis_perfmeasures_reporting`	  Were all performance measures results reported graphically or in tabular format? 
-
 `11.1.analysis_montecarlo_uncertainty`	  Are Monte Carlo error quantified to assess the simulation uncertainty? (by running the same simulation under different number of random-number seeds)
 
 ```{r}
+# yes/no questions - make function to create a horizontal histogram for a given variable
+create_hist <- function(survey, variable_name) {
+  # get variable from data
+  data_to_plot <- survey %>%
+    select(all_of(variable_name)) %>%
+    count(.data[[variable_name]])
 
+  # define colors
+  colors <- c("No" = "#377eb8", "Yes" = "#4daf4a")
 
-###### 9: Case study/working example
+  # make histogram
+  ggplot(data_to_plot, aes(x = n, y = fct_relevel(.data[[variable_name]], "Yes", "No"), fill = .data[[variable_name]])) +
+    geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+    coord_flip() +
+    xlab("") +
+    ylab("Count") +
+    ggtitle("") +
+    scale_x_continuous(breaks = seq(0, 100, by = 10), limits = c(0, 100)) +
+    scale_fill_manual(values = colors) +
+    labs(y = variable_name, x = "Count") +
+    theme_minimal() +
+    theme(legend.position = "bottom")
+}
 
-
-
-###### 10: Analysis performance measures
-
-
-
-
-###### 11: Monte Carlo error
+# get plots
+create_hist(survey, "9.1.analysis_exploratory")
+create_hist(survey, "11.1.analysis_montecarlo_uncertainty")
 ```
 
 # Important points
