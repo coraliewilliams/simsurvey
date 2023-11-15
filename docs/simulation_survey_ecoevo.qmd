@@ -25,7 +25,8 @@ editor_options:
 
 pacman::p_load(
   rmarkdown, readr, dplyr, purrr, splitstackshape, tidyverse, tidyr, ggplot2,
-  vroom, details, sessioninfo, devtools, readxl, forcats, stringr, RColorBrewer
+  vroom, details, sessioninfo, devtools, readxl, forcats, stringr, RColorBrewer,
+  patchwork
 )
 
 options(digits = 3, scipen = 5)
@@ -52,8 +53,6 @@ Using the ADEMP+ framework we will:
 ## Journal list
 
 ```{r journalList, warning=F, message=F}
-
-
 # Load journal lists
 jcr_stats <- read_csv("~/Projects/simsurvey/data/JCR/JCR_JournalResults_09_2022_Statistics_and_Probability.csv", skip = 2)
 jcr_eco <- read_csv("~/Projects/simsurvey/data/JCR/JCR_JournalResults_09_2022_Ecology.csv", skip = 2)
@@ -128,10 +127,13 @@ r <- c("1.1.aims_reporting",
        "3.1.estimandtarget_reporting",
        "4.1.method_reporting",
        "5.1.perfmeasures_reporting",
+       "5.3.perfmeasures_lessknown",
        "6.1.software_reporting",
-       "9.1.analysis_exploratory",
-       "10.1.analysis_perfmeasures_reporting",
-       "11.1.analysis_montecarlo_uncertainty")
+       "6.4.software_Rpackage",
+       "7.1.code_datagen",
+       "7.2.code_datagen_allsteps",
+       "8.1.code_perfmeasures",
+       "10.1.analysis_perfmeasures_reporting")
 
 # only planning stage 
 r1 <- c("1.1.aims_reporting", 
@@ -152,13 +154,15 @@ r3 <- c("9.1.analysis_exploratory",
 # names of reporting-section questions ------------
 rs <- c("1.2.aims_reportingsection", 
         "2.2.datagen_reportingsection", 
+        "2.5.2.datagen_parameters_section",
+        "2.6.2.datagen_conditions_section",
+        "2.7.2.datagen_simulationruns_section",
         "3.2.estimandtarget_reportingsection",
         "4.2.method_reportingsection",
         "5.2.perfmeasures_reportingsection",
         "6.2.software_reportingsection",
         "9.2.analysis_exploratory_reporting",
         "10.2.analysis_perfmeasures_reportingsection",
-        "10.1.analysis_perfmeasures_reporting",
         "11.2.analysis_montecarlo_reportingsection")
 
 # only planning stage
@@ -179,7 +183,40 @@ rs3 <- c("9.2.analysis_exploratory_reporting",
 
 ```
 
+
+
+
 # Analysis
+
+### Literature search
+
+```{r}
+# make year as factor
+survey$paper_year <-  as.factor(survey$paper_year)
+
+# plot histogram
+ggplot(survey, aes(x = paper_year)) +
+  geom_bar(aes(fill = paper_year)) +
+  xlab("") +
+  ylab("Count") +
+  ggtitle("Publication year") +
+  scale_fill_manual(values=rep("lightblue",6)) +
+  scale_y_continuous(breaks = seq(0, 28, by = 5), limits = c(0, 28)) +
+  theme(
+    axis.text.x = element_text(angle = 40, hjust=1, size = 12), 
+    axis.text.y = element_text(size = 12),  
+    axis.title.x = element_text(size = 12), 
+    axis.title.y = element_text(size = 12), 
+    panel.background = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_line(color = "grey50"),
+    panel.grid.minor.y = element_line(color = "grey50")
+  ) +
+  guides(fill=FALSE)
+
+```
+
 
 ### Reporting
 
@@ -238,7 +275,7 @@ create_plot <- function(survey, r_vector, title) {
   ggplot(data = percent_r, aes(x = name, y = percentage, fill = value)) +
     geom_col(width = 0.7, color = "black") +
     coord_flip(ylim = c(0, 100)) +
-    scale_fill_manual(values = c("N.A."="#E3E3E3", "No"="#713979", "Yes"="#4DAF4A")) +
+    scale_fill_manual(values = c("N.A."="white", "No"="#713979", "Yes"="#4DAF4A")) +
     theme(legend.position = "bottom", 
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -304,7 +341,16 @@ print(fig4)
 print(fig5)
 print(fig6)
 print(supp2)
+
+# Make plot for main text
+Figure3 <- supp1 / supp2 +
+  plot_annotation(tag_levels = 'A')
+
+# save 
+ggsave("output/Figure3_ReportingPractices_allStages.png",Figure3)
+
 ```
+
 
 
 ### Characteristics
@@ -543,12 +589,22 @@ ggplot(df_distribution_counts, aes(x = Distribution, y = Counts, fill = Distribu
 ### Version 1 (count of all)
 
 #table(survey$`3.3.estimandtarget_type`)
-
 # create new variable "both"
 
 # Split the entries and unlist into a single vector 
 estimand_list <- unlist(strsplit(survey$`3.3.estimandtarget_type`, ";"))
+estimand_counts <- table(estimand_list)
 
+# order the counts in decreasing order
+estimand_counts <- estimand_counts[order(estimand_counts, decreasing = TRUE)]
+
+# make barplot
+barplot(estimand_counts,
+        main="Estimand / Statistical target",
+        xlab="",            
+        ylab="Counts",             
+        col=rainbow(length(estimand_counts), start=0, end=.3),
+        border="darkgrey")
 
 
 ### Version 2 (paper specific )
@@ -591,6 +647,15 @@ estimand_list <- unlist(strsplit(survey$`3.3.estimandtarget_type`, ";"))
 
 # Software list
 software_list <- unlist(strsplit(survey$`6.3.software_type`, ";"))
+
+# get histogram 
+ggplot(df_distribution_counts, aes(x = Distribution, y = Counts, fill = Distribution)) +
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette = "Set3") +
+  theme_minimal() +
+  labs(title = "Statistical Distributions (version with breakdown)", x = "Distribution", y = "Counts") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 
 
 
@@ -700,7 +765,7 @@ Morris, T. P., White, I. R., & Crowther, M. J. (2019). Using simulation studies 
 sessioninfo::session_info()%>%
   details::details(
     summary = 'Current session info',
-    open    = TRUE
+    open    = F
   )
 
 ```
