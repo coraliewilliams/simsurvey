@@ -90,6 +90,8 @@ write_csv(ecoevo_merged, "~/Projects/simsurvey/data/ecoevo_jcr_journal_list.csv"
 
 ```
 
+
+
 ## Search strings
 
 The custom search string was developed on 13/10/2022 on Web of Science
@@ -109,17 +111,39 @@ The custom search string was developed on 13/10/2022 on Web of Science
 Note, exclusion term criteria were added post-hoc.
 :::
 
+### Deviations and additions
+
+Five articles were added post-hoc to the search and screening to reach 100 articles. 
+
+```{r}
+# 10/11/2023
+# import rayyan decision of 50 papers screening
+rayyan_50papers <- read.csv("~/Projects/simsurvey/data/survey/rayyan_abstract_results_50papers.csv")
+
+# randomly sample 5 papers from included list
+set.seed(48)
+extra_5papers <- rayyan_50papers %>% 
+  filter(grepl("Included", notes)) %>% 
+  sample_n(5)
+
+# Pseudo-randomly sample one more paper as one paper from the 5 randomly sampled did not meet inclusion criteria in full-text (Wu et al., 2019: is not a simulation study)
+set.seed(48)
+extra_6papers <- rayyan_50papers %>% 
+  filter(grepl("Included", notes)) %>% 
+  sample_n(6)
+
+```
+
+
+
 # Data cleaning
 
 ```{r}
 # Load text extraction
-survey_raw <- read_excel("~/Projects/simsurvey/data/survey/simulationSurvey_extraction_103papers_21092023.xlsx", na=c("", "NA", NA))
-
-# remove excluded papers
-survey <- survey_raw %>% filter(is.na(exclude))
+survey_raw <- read_excel("~/Projects/simsurvey/data/survey/simulationSurvey_extraction_100papers_21112023.xlsx", na=c("", "NA", NA))
 
 # remove questions that are comments
-survey <- survey %>% select(!matches("comment"))
+survey <- survey_raw %>% select(!matches("comment"))
 
 # Names of reporting questions -------------------
 r <- c("1.1.aims_reporting", 
@@ -191,6 +215,10 @@ rs3 <- c("9.2.analysis_exploratory_reporting",
 ### Literature search
 
 ```{r}
+# make year as factor
+journal_count <- as.data.frame(table(survey$journal))
+
+
 # make year as factor
 survey$paper_year <-  as.factor(survey$paper_year)
 
@@ -465,7 +493,19 @@ ggplot(survey, aes(x = `2.3.datagen_type`)) +
   ) +
   guides(fill=FALSE)
 
+####### Parameters, conditions and runs #######
 
+mean(survey$`2.5.1.datagen_parameters`, na.rm=T)
+min(survey$`2.5.1.datagen_parameters`, na.rm=T)
+max(survey$`2.5.1.datagen_parameters`, na.rm=T)
+
+mean(survey$`2.6.1.datagen_conditions`, na.rm=T)
+min(survey$`2.6.1.datagen_conditions`, na.rm=T)
+max(survey$`2.6.1.datagen_conditions`, na.rm=T)
+
+mean(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
+min(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
+max(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
 
 
 ####### Distribution #######
@@ -649,13 +689,6 @@ barplot(estimand_counts,
 software_list <- unlist(strsplit(survey$`6.3.software_type`, ";"))
 
 # get histogram 
-ggplot(df_distribution_counts, aes(x = Distribution, y = Counts, fill = Distribution)) +
-  geom_bar(stat = "identity") +
-  scale_fill_brewer(palette = "Set3") +
-  theme_minimal() +
-  labs(title = "Statistical Distributions (version with breakdown)", x = "Distribution", y = "Counts") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
 
 
 
