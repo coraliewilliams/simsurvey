@@ -1,6 +1,6 @@
 ---
 title: "Current Practices of Simulation Studies for Statistical Method Evaluation in Ecology and Evolutionary Biology"
-author: "Coralie Williams, Malgorzata Lagisz, Kyle Morrison, Lorenzo Ricolfi, Yefeng Yang, David Warton, and Shinichi Nakagawa"
+author: "Coralie Williams, Yefeng Yang, Malgorzata Lagisz, Kyle Morrison, Lorenzo Ricolfi, David Warton, and Shinichi Nakagawa"
 date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
 format:
   html:
@@ -9,7 +9,7 @@ format:
     toc-depth: 2
     theme: sandstone
     embed-resources: true
-    code-fold: show
+    code-fold: true
     code-tools: true
     number-sections: true
 editor_options: 
@@ -26,7 +26,7 @@ editor_options:
 pacman::p_load(
   rmarkdown, readr, dplyr, purrr, splitstackshape, tidyverse, tidyr, ggplot2,
   vroom, details, sessioninfo, devtools, readxl, forcats, stringr, RColorBrewer,
-  patchwork
+  patchwork, kableExtra
 )
 
 options(digits = 3, scipen = 5)
@@ -42,11 +42,11 @@ Using the ADEMP framework as a basis, we put together a list of reporting items 
 
 # Objectives
 
-Using the ADEMP+ framework we will:
+Using the ADEMP+ framework our objective are:
 
--   Survey the characteristics of simulation studies evaluating statistical methodologies in ecology and evolutionary biology.
+1)   Survey the characteristics of simulation studies evaluating statistical methodologies in ecology and evolutionary biology.
 
--   Assess the reporting practices of simulation studies evaluating statistical methodologies in ecology and evolutionary biology.
+2)   Assess the reporting practices of these simulation studies evaluating statistical methodologies in ecology and evolutionary biology.
 
 # Literature search
 
@@ -136,16 +136,20 @@ extra_6papers <- rayyan_50papers %>%
 
 
 
-# Data cleaning
+# Analysis
 
 ```{r}
 # Load text extraction
-survey_raw <- read_excel("~/Projects/simsurvey/data/survey/simulationSurvey_extraction_100papers_21112023.xlsx", na=c("", "NA", NA))
-
+survey_raw <- read_excel("~/Projects/simsurvey/data/survey/simulationSurvey_extraction_100papers_18012024.xlsx", na=c("", "NA", NA))
 # remove questions that are comments
 survey <- survey_raw %>% select(!matches("comment"))
 
-# Names of reporting questions -------------------
+```
+
+
+```{r}
+
+# Store 12 reporting questions -------------------
 r <- c("1.1.aims_reporting", 
        "2.1.datagen_reporting", 
        "3.1.estimandtarget_reporting",
@@ -175,7 +179,7 @@ r3 <- c("9.1.analysis_exploratory",
        "11.1.analysis_montecarlo_uncertainty")
 
 
-# names of reporting-section questions ------------
+# Store 12 reporting-section questions ------------
 rs <- c("1.2.aims_reportingsection", 
         "2.2.datagen_reportingsection", 
         "2.5.2.datagen_parameters_section",
@@ -209,15 +213,15 @@ rs3 <- c("9.2.analysis_exploratory_reporting",
 
 
 
-
-# Analysis
-
-### Literature search
+### Literature search results
 
 ```{r}
 # make year as factor
 journal_count <- as.data.frame(table(survey$journal))
-
+journal_count <- journal_count %>% 
+  select(Journal="Var1",Freq="Freq") %>%
+  arrange(desc(Freq))
+kable(journal_count)
 
 # make year as factor
 survey$paper_year <-  as.factor(survey$paper_year)
@@ -240,13 +244,12 @@ ggplot(survey, aes(x = paper_year)) +
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_line(color = "grey50"),
     panel.grid.minor.y = element_line(color = "grey50")
-  ) +
-  guides(fill=FALSE)
+  ) + theme(legend.position="none")
 
 ```
 
 
-### Reporting
+## Reporting results
 
 The following questions were focused on simulation studies reporting quality:
 
@@ -309,6 +312,8 @@ create_plot <- function(survey, r_vector, title) {
           panel.grid.minor = element_blank(),
           panel.background = element_blank()) +
     ggtitle(title) +
+    theme(axis.text.x = element_text(size=14))  +
+    theme(axis.text.y = element_text(size=14))  +
     ylab("Percentage (%)") +
     xlab("Survey Question")
 }
@@ -317,17 +322,14 @@ create_plot <- function(survey, r_vector, title) {
 fig1 <- create_plot(survey, r1, "Reporting in planning stage")
 fig2 <- create_plot(survey, r2, "Reporting in coding stage")
 fig3 <- create_plot(survey, r3, "Reporting in analysis stage")
-supp1 <- create_plot(survey, r, "Reporting practices (all stages)")
+supp1 <- create_plot(survey, r, "Reporting practices")
 
 # Plot the figures
-print(fig1)
-print(fig2)
-print(fig3)
 print(supp1)
 
 ```
 
-### Reporting section
+## Reporting section results
 
 The following questions were focused on simulation studies reporting section:
 
@@ -362,40 +364,41 @@ The following questions were focused on simulation studies reporting section:
 fig4 <- create_plot(survey, rs1, "Reporting section for planning stage")
 fig5 <- create_plot(survey, rs2, "Reporting section for coding stage")
 fig6 <- create_plot(survey, rs3, "Reporting section for analysis stage")
-supp2 <- create_plot(survey, rs, "Reporting section practices (all stages)")
+supp2 <- create_plot(survey, rs, "Reporting section practices")
 
 # Plot the figures
-print(fig4)
-print(fig5)
-print(fig6)
 print(supp2)
 
 # Make plot for main text
-Figure3 <- supp1 / supp2 +
+Figure_ReportingPractices <- supp1 / supp2 +
   plot_annotation(tag_levels = 'A')
 
 # save 
-ggsave("output/Figure3_ReportingPractices_allStages.png",Figure3)
+ggsave("output/Figure_ReportingPractices_allStages.png", Figure_ReportingPractices)
 
 ```
 
 
 
-### Characteristics
+## Characteristics results
 
 The following questions were focused on simulation studies characteristics:
 
-**Analysis of planning stage**
+**Planning stage**
 
 `1.3.aims_purpose`	What is the purpose of the simulation study?
 
 `2.3.datagen_type`	 What type of data-generating mechanism was used?
 
-`2.5.2.datagen_parameters`	How many varying parameters were used in data-generating mechanisms?
+`2.4.datagen_informed` Are the specifications of the data-generating mechanisms informed?
+
+`2.5.1.datagen_parameters` How many varying parameters were used in data-generating mechanisms?
 
 `2.6.1.datagen_conditions`	How many conditions were used in total in the simulation study? (varying parameter combination)
 
 `2.7.1.datagen_simulationruns`	What is the number of simulation runs performed? (report the maximum number used)
+
+`2.7.3.datagen_simulationruns_justification` Was the number simulation runs justified?
 
 `2.8.datagen_distribution`	If a parametric model was used, what was/were the distribution type(s) used?  
 
@@ -410,209 +413,218 @@ The following questions were focused on simulation studies characteristics:
 ```{r}
 ###### 1: Aims --------------------------------------------------------------------------------
 
-#table(survey$`1.3.aims_purpose`)
+#table(survey$`1.3.aims_purpose`, useNA = "ifany")
 
-survey <- survey %>%
-  mutate(`1.3.aims_purpose` = ifelse(`1.3.aims_purpose` == "Designing and/or planning of study;Evaluating analytical method", "Both", `1.3.aims_purpose`))
+# Save aims response as separate vector
+aims_purpose <- survey$`1.3.aims_purpose`
 
+#  Format the vector into a dataframe
+aims_dat <- data.frame(AimsPurpose = aims_purpose) %>%
+  mutate(category = case_when(
+    AimsPurpose=="Evaluating analytical method" ~ "Analytical\n method",
+    AimsPurpose=="Designing and/or planning of study" ~ "Study\n design",
+    AimsPurpose=="Both"|AimsPurpose=="Designing and/or planning of study;Evaluating analytical method" ~ "Both"
+    )) %>%
+  group_by(category) %>%
+  summarise(counts = n()) %>%
+  mutate(percentage = counts / sum(counts) * 100)
 
-# get percentages
-aims_sum <- survey %>%
-  group_by(`1.3.aims_purpose`) %>%
-  summarise(Count = n()) %>%
-  mutate(Percentage = (Count / sum(Count)) * 100)
-
-# update labels
-aims_sum <- aims_sum %>%
-  mutate(Label = paste(`1.3.aims_purpose`, sprintf("(%0.2f%%)", Percentage)))
-
-
-# re-order levels
-survey$`1.3.aims_purpose` <- factor(survey$`1.3.aims_purpose`, levels=c("Evaluating analytical method",
-                                           "Designing and/or planning of study",
-                                           "Both"))
-
-
-# plot histogram
-ggplot(survey, aes(x = `1.3.aims_purpose`)) +
-  geom_bar(aes(fill = `1.3.aims_purpose`)) +
-  scale_x_discrete(labels = setNames(aims_sum$Label, aims_sum$`1.3.aims_purpose`)) +
-  xlab("") +
-  ylab("Count") +
-  ggtitle("Aims and Purpose") +
-  scale_fill_brewer(palette="Set2") +
-  theme(
-    axis.text.x = element_text(angle = 40, hjust = 1, size = 12), 
-    axis.text.y = element_text(size = 12),  
-    axis.title.x = element_text(size = 12), 
-    axis.title.y = element_text(size = 12), 
-    panel.background = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.major.y = element_line(color = "grey50"),
-    panel.grid.minor.y = element_blank()
-  ) +
-  guides(fill=FALSE)
+# Plot histogram with ordered categories
+plot_aims <- ggplot(aims_dat, aes(x = reorder(category, -counts), y = counts, fill = category)) +
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette = "Pastel2") +
+  theme_minimal() +
+  scale_y_continuous(breaks = seq(0, 80, by = 10)) +
+  #coord_flip() + 
+  labs(title = "Aims and Purposes", x = "", y = "percentage") +
+  theme(axis.text.x = element_text(size=14))  +
+  theme(axis.text.y = element_text(size=14)) +
+  theme(legend.position = "none") +
+  coord_fixed(ratio=0.04)
+plot_aims
 
 ```
 
 ```{r}
 ###### 2: Data-generating mechanism ----------------------------------------------------------------
 
-####### Type #######
+####### Data-generating Type #######
 
-#table(survey$`2.3.datagen_type`)
+#table(survey$`2.3.datagen_type`, useNA = "ifany")
 
-# rename level
-survey <- survey %>%
-  mutate(`2.3.datagen_type` = ifelse(`2.3.datagen_type` == "Parametric model (\"known\");Resampling method (\"unknown\")","Both", `2.3.datagen_type`))
+# save data-generation type as separate vector
+datgen_type <- survey$`2.3.datagen_type`
+
+# Format the vector into a dataframe and clean up the categories
+datgen_type <- data.frame(Type=datgen_type) %>%
+  mutate(Type = case_when(
+           Type == "Parametric model (\"known\");Resampling method (\"unknown\")" ~ "Both",
+           grepl("Parametric model", Type, ignore.case = T) ~ "Parametric",
+           grepl("Resampling method", Type, ignore.case = T) ~ "Resampling",
+           TRUE ~ "NA"
+         ))
+
+# Derive the counts and percentages
+datgen_type_summary <- datgen_type %>%
+  group_by(Type) %>%
+  summarise(counts = n()) %>%
+  mutate(Percentage = counts / sum(counts) * 100) %>% 
+  arrange(desc(counts)) %>%
+  mutate(Type = factor(Type, levels = unique(Type))) 
 
 
-# re-order levels
-survey$`2.3.datagen_type` <-factor(survey$`2.3.datagen_type`, levels=c("Parametric model (\"known\")",
-                                           "Resampling method (\"unknown\")",
-                                           "Both"))
+# Plot histogram of data-generation type
+plot_datgen <- ggplot(datgen_type_summary, aes(x = reorder(Type, -counts), y = counts, fill = Type)) +
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette = "Pastel2") +
+  theme_minimal() +
+  #coord_flip() +
+  labs(title = "Data-generating type", x = "", y = "percentage") +
+  scale_y_continuous(breaks = seq(0, 80, by = 10)) +
+  theme(axis.text.x = element_text(size=14, angle=45, hjust=1))  +
+  theme(axis.text.y = element_text(size=14))  +
+  theme(legend.position = "none") +
+  coord_fixed(ratio=0.04)
+plot_datgen
 
-# plot histogram
-ggplot(survey, aes(x = `2.3.datagen_type`)) +
-  geom_bar(aes(fill = `2.3.datagen_type`)) +
-  xlab("") +
-  ylab("Count") +
-  ggtitle("Data-generating mechanism") +
-  scale_fill_brewer(palette="Set3") +
-  theme(
-    axis.text.x = element_text(angle = 40, hjust=1, size = 12), 
-    axis.text.y = element_text(size = 12),  
-    axis.title.x = element_text(size = 12), 
-    axis.title.y = element_text(size = 12), 
-    panel.background = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.major.y = element_line(color = "grey50"),
-    panel.grid.minor.y = element_blank()
-  ) +
-  guides(fill=FALSE)
+
+####### Data-generating parameters justified #######
+
+#table(survey$`2.4.datagen_informed`, useNA = "ifany")
+#
+# save data-generation type as separate vector
+datgen_inform <- survey$`2.4.datagen_informed`
+datgen_inform <- data.frame(datgen_inform)
+
+# Derive the counts and percentages
+datgen_inform_summary <- datgen_inform %>%
+  group_by(datgen_inform) %>%
+  summarise(counts = n()) %>%
+  mutate(Percentage = counts / sum(counts) * 100) %>% 
+  arrange(desc(counts)) %>%
+  mutate(datgen_inform = factor(datgen_inform, levels = unique(datgen_inform))) 
+
+
+# Plot histogram of data-generation type
+ggplot(datgen_inform_summary, aes(x = reorder(datgen_inform, counts), y = counts, fill = datgen_inform)) +
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette = "Pastel2") +
+  theme_minimal() +
+  coord_flip() +
+  labs(title = "Data-generating justification", x = "", y = "counts")  +
+  theme(axis.text.x = element_text(size=14))  +
+  theme(axis.text.y = element_text(size=14))
+
 
 ####### Parameters, conditions and runs #######
 
-mean(survey$`2.5.1.datagen_parameters`, na.rm=T)
-min(survey$`2.5.1.datagen_parameters`, na.rm=T)
-max(survey$`2.5.1.datagen_parameters`, na.rm=T)
+##### Number of parameters
+par_mean <- mean(survey$`2.5.1.datagen_parameters`, na.rm=T)
+par_min <- min(survey$`2.5.1.datagen_parameters`, na.rm=T)
+par_max <- max(survey$`2.5.1.datagen_parameters`, na.rm=T)
 
-mean(survey$`2.6.1.datagen_conditions`, na.rm=T)
-min(survey$`2.6.1.datagen_conditions`, na.rm=T)
-max(survey$`2.6.1.datagen_conditions`, na.rm=T)
+# Set up data to plot
+datgen_pars <- data.frame(pars=survey$`2.5.1.datagen_parameters`)
+datgen_pars_clean <- na.omit(datgen_pars)
+# histogram 
+ggplot(datgen_pars_clean, aes(x=pars)) +
+  geom_histogram(binwidth = 1, colour = "black", fill = "skyblue") +
+  scale_fill_brewer(palette = "Pastel2") +
+  scale_x_continuous(breaks = seq(0, 14, by = 1)) +
+  scale_y_continuous(breaks = seq(0,26, by=5)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size=14)) +
+  theme(axis.text.y = element_text(size=14)) +
+  labs(title = "Data-generating mechanism: number of parameters", x = "No. parameters", y = "frequency")
 
-mean(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
-min(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
-max(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
+
+###### Number of conditions
+cond_mean <- mean(survey$`2.6.1.datagen_conditions`, na.rm=T)
+cond_min <- min(survey$`2.6.1.datagen_conditions`, na.rm=T)
+cond_max <- max(survey$`2.6.1.datagen_conditions`, na.rm=T)
+
+
+
+###### Number of simulation runs
+survey$`2.7.1.datagen_simulationruns` <- as.numeric(survey$`2.7.1.datagen_simulationruns`)
+runs_mean <- mean(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
+runs_min <- min(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
+runs_max <- max(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
+
+# Set up data to plot
+datgen_runs <- data.frame(runs=survey$`2.7.1.datagen_simulationruns`)
+datgen_runs$runs <- as.factor(datgen_runs$runs)
+# IMPROVE: rename level "NA" into "not stated"
+#datgen_runs[is.na(datgen_runs)] <- "not stated"
+
+
+
+# histogram 
+ggplot(datgen_runs, aes(x=runs)) +
+  geom_bar(colour = "black", fill = "skyblue") +
+  #scale_x_continuous(breaks = seq(0, 50000, by = 10000)) +
+  #scale_y_continuous(breaks = seq(0,70, by=5)) +
+  theme_minimal() +
+  coord_flip() +
+  theme(axis.text.x = element_text(size=14)) +
+  theme(axis.text.y = element_text(size=14)) +
+  labs(title = "Data-generating mechanism: number of simulation runs", x = "No. runs", y = "frequency")
+
+
+
+
+####### Simulation runs justified #######
+
+#table(survey$`2.7.3.datagen_simulationruns_justification`)
+
+
+
+
 
 
 ####### Distribution #######
 
 #table(survey$`2.8.datagen_distribution`)
-
 dist_vector <- survey$`2.8.datagen_distribution`
 
+# Format the vector into a dataframe and clean up the categories
+dist_new <- data.frame(Distribution=dist_vector) %>%
+  separate_rows(Distribution, sep = ";|,") %>%
+  mutate(Distribution = trimws(Distribution),
+         Distribution = case_when(
+           grepl("normal", Distribution, ignore.case = T) ~ "Normal",
+           grepl("binomial", Distribution, ignore.case = T) ~ "Binomial",
+           grepl("poisson", Distribution, ignore.case = T) ~ "Poisson",
+           grepl("negative binomial", Distribution, ignore.case = T) ~ "Negative Binomial",
+           grepl("uniform", Distribution, ignore.case = T) ~ "Uniform",
+           grepl("exponential", Distribution, ignore.case = T) ~ "Exponential",
+           grepl("gamma", Distribution, ignore.case = T) ~ "Gamma",
+           grepl("dirichlet", Distribution, ignore.case = T) ~ "Dirichlet",
+           grepl("No parametric distribution used", Distribution, ignore.case = T) ~ "Non parametric",
+           TRUE ~ "Other"
+         ))
 
-##------ Version 1 (no breakdown summarise binomial and normal as one)
-
-# format distribution vector
-dist_vector <- gsub("Binomial \\(includes\\/assumes Bernoulli\\)", "Binomial", dist_vector)
-
-# make function
-count_distributions <- function(dist_vector) {
-  
-  # Split the entries and unlist into a single vector 
-  dist_list <- unlist(strsplit(dist_vector, ";|,"))
-  dist_list <- trimws(dist_list)  # trim whitespace
-  
-  # counts for each distribution
-  counts <- table(tolower(dist_list))
-  
-  # Adjust counts for 'normal' by excluding 'multivariate normal' and 'truncated normal'
-  counts["normal"] <- counts["normal"] - counts["multivariate normal"] - counts["truncated normal"]
-  
-  # Counts for 'binomial' 
-  counts["binomial"] <- counts["binomial"] + counts["uniform/binomial"] + counts["negative binomial"]  + counts["beta binomial"]
-  
-  # Counts for 'uniform' 
-  counts["uniform"] <- counts["uniform"] + counts["unif"]
-  
-  # Counts for 'exponential' 
-  counts["exponential"] <- counts["exponential"] + counts["cubed exponential"]
-  
-  # Replace counts of distributions not listed with "Other" or "NA"
-  known_distributions <- c("normal", "multivariate normal", "truncated normal", "beta", "dirichlet", 
-                           "gamma", "poisson", "binomial", "uniform", "exponential", "no parametric distribution used")
-  counts <- counts[known_distributions]
-  
-  # Sum all other distributions into "Other"
-  counts["other"] <- sum(counts[!names(counts) %in% known_distributions])
-  
-  # Count "NA" if present
-  counts["na"] <- sum(dist_list == "NA", na.rm = TRUE)
-  
-  # Return the counts
-  return(counts)
-}
+# Derive the counts and percentages
+dist_summary <- dist_new %>%
+  group_by(Distribution) %>%
+  summarise(counts = n()) %>%
+  mutate(Percentage = counts / sum(counts) * 100) %>% 
+  arrange(desc(counts)) %>%
+  mutate(Distribution = factor(Distribution, levels = unique(Distribution))) 
 
 
-
-
-# Example usage:
-dist_vector <- survey$`2.8.datagen_distribution`
-#count_distributions(dist_vector)
-
-
-# Get counts of distributions
-distribution_counts <- count_distributions(dist_vector)
-
-# Convert counts to dataframe for ggplot and reorder the factor levels by Counts
-df_distribution_counts <- data.frame(
-  Distribution = factor(names(distribution_counts), 
-                        levels = names(distribution_counts)[order(distribution_counts,decreasing = TRUE)]),
-  Counts = as.integer(distribution_counts)
-)
-
-                   
-# Plot histogram with ordered distributions
-ggplot(df_distribution_counts, aes(x = Distribution, y = Counts, fill = Distribution)) +
+# Plot histogram
+plot_dist <- ggplot(dist_summary, aes(x = Distribution, y = counts, fill = Distribution)) +
   geom_bar(stat = "identity") +
   scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
-  labs(title = "Statistical Distributions (version grouped)", x = "Distribution", y = "Counts") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  scale_y_continuous(breaks = seq(0,50, by=5)) +
+  labs(title = "Statistical Distributions", x = "", y = "percentage") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size=14)) +
+  theme(axis.text.y = element_text(size=14)) +
+  theme(legend.position = "none")
 
-
-
-
-## ---------- Version 2 (breakdown for each binomial and normal)
-
-# old code
-# not sure how to treat "beta binomial" => total normal and total binomial or breakdown??
-counts <- c(
-    "Multivariate normal" = length(grep("multivariate normal", dist_vector, ignore.case = TRUE)),
-    "Truncated normal" = length(grep("truncated", dist_vector, ignore.case = TRUE)),
-    "Beta" = length(grep("beta", dist_vector, ignore.case = TRUE)),
-    "Dirichlet" = length(grep("dirichl", dist_vector, ignore.case = TRUE)),
-    "Gamma" = length(grep("gamma", dist_vector, ignore.case = TRUE)),
-    "Poisson" = length(grep("poisson", dist_vector, ignore.case = TRUE)),
-    "Binomial" = length(grep("binomial", dist_vector, ignore.case = TRUE)),
-    "Uniform" = length(grep("uniform", dist_vector, ignore.case = TRUE)),
-    "Exponential" = length(grep("exponential", dist_vector, ignore.case = TRUE)),
-    "Other" = length(grep("Other", dist_vector, ignore.case = TRUE, value=T))
-  )
-
-
-
-# Plot histogram with ordered distributions
-ggplot(df_distribution_counts, aes(x = Distribution, y = Counts, fill = Distribution)) +
-  geom_bar(stat = "identity") +
-  scale_fill_brewer(palette = "Set3") +
-  theme_minimal() +
-  labs(title = "Statistical Distributions (version with breakdown)", x = "Distribution", y = "Counts") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+plot_dist
 
 
 ```
@@ -625,11 +637,9 @@ ggplot(df_distribution_counts, aes(x = Distribution, y = Counts, fill = Distribu
 # not sure if we should count each time it is mentioned as separate (percentage per Target Type)
 # or specify the per article (different categories: both, all three, all four...)
 
-
 ### Version 1 (count of all)
 
 #table(survey$`3.3.estimandtarget_type`)
-# create new variable "both"
 
 # Split the entries and unlist into a single vector 
 estimand_list <- unlist(strsplit(survey$`3.3.estimandtarget_type`, ";"))
@@ -637,42 +647,122 @@ estimand_counts <- table(estimand_list)
 
 # order the counts in decreasing order
 estimand_counts <- estimand_counts[order(estimand_counts, decreasing = TRUE)]
+estimand_counts <- as.data.frame(estimand_counts)
 
-# make barplot
-barplot(estimand_counts,
-        main="Estimand / Statistical target",
-        xlab="",            
-        ylab="Counts",             
-        col=rainbow(length(estimand_counts), start=0, end=.3),
-        border="darkgrey")
+# rename categories of estimand_list variable
+estimand_counts <- estimand_counts %>%
+  mutate(estimand_list = case_when(
+    estimand_list=="Estimand (estimation)" ~ "Estimation",
+    estimand_list=="Null hypothesis (hypothesis testing)" ~ "Hypothesis \ntesting",
+    estimand_list=="Selected design (study design)" ~ "Study design",
+    estimand_list=="Predictions (prediction)" ~ "Prediction",
+    estimand_list=="Model (model selection)" ~ "Model selection"
+  ))
 
-
-### Version 2 (paper specific )
-
-#table(survey$`3.3.estimandtarget_type`)
-
-
-
-
+# Plot histogram
+plot_estarget <- ggplot(estimand_counts, aes(x = reorder(estimand_list, -Freq), y = Freq, fill = estimand_list)) +
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette = "Set3") +
+  theme_minimal() +
+  #coord_flip() +
+  labs(title = "Statistical target", x = "", y = "percentage") +
+  scale_y_continuous(breaks = seq(0,70, by=10)) +
+  theme(axis.text.x = element_text(size=14, angle=45, hjust=1)) +
+  theme(axis.text.y = element_text(size=14)) +
+  theme(legend.position = "none")
+plot_estarget
 
 
 ###### 4: Method -------------------------------------------------------------------
 
 #table(survey$`4.3.method_type`)
 
+# Save counts per category
+method_type <- table(survey$`4.3.method_type`)
+
+# order the counts in decreasing order
+method_type <- method_type[order(method_type, decreasing = TRUE)]
+method_type <- as.data.frame(method_type)
+
+# rename Var1 categories
+method_type <- method_type %>%
+  mutate(Var1 = case_when(
+    Var1=="Existing method(s)" ~ "Existing",
+    Var1=="New method or procedure" ~ "New method",
+    Var1=="Both (e.g. for comparison purposes)" ~ "Both",
+    Var1=="Study design" ~ "Study design"
+  ))
 
 
+# Plot histogram
+plot_method <-ggplot(method_type, aes(x = reorder(Var1, -Freq), y = Freq, fill = Var1)) +
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette = "Pastel2") +
+  theme_minimal() +
+  #coord_flip() +
+  labs(title = "Method type", x = "", y = "percentage") +
+  theme(axis.text.x = element_text(size=14, angle=45, hjust=1)) +
+  theme(axis.text.y = element_text(size=14)) +
+  scale_y_continuous(breaks = seq(0,70, by=10)) +
+  theme(legend.position = "none") +
+  coord_fixed(0.08)
+
+plot_method
 
 
 ###### 5: Performance measures -----------------------------------------------------
 
 #table(survey$`5.4.perfmeasures`)
+# make new vector of all performance measures
+perf_measures <- survey$`5.4.perfmeasures`
 
 
+# Obtained data frame with all single entried of performance measures
+perf_dat <- data.frame(PerfMeasures = perf_measures) %>%
+  # Separate entries by ";" or ","
+  separate_rows(PerfMeasures, sep = ";|,") %>%
+  # Clean up category names into specified categories
+  mutate(category = case_when(
+    grepl("Bias", PerfMeasures, ignore.case = TRUE) ~ "Bias",
+    grepl("Mean squared error|MSE|relative standard error", PerfMeasures, ignore.case = TRUE) ~ "Mean squared \nerror (MSE)",
+    grepl("Confidence interval length|width", PerfMeasures, ignore.case = TRUE) ~ "Confidence \ninterval width",
+    grepl("Precision|coefficient of variation|Coefficient of variance", PerfMeasures, ignore.case = TRUE) ~ "Precision",
+    grepl("Power", PerfMeasures, ignore.case = TRUE) ~ "Power",
+    grepl("Type I|Type II", PerfMeasures, ignore.case = TRUE) ~ "Type I or II error",
+    grepl("false positive rate|false negative rate|TPR|TNR|FPR|FNR|classification rate|positive predictive value| misclassification|error rate", PerfMeasures, ignore.case = TRUE) ~ "Classification \nrate",
+    grepl("Coverage", PerfMeasures, ignore.case = TRUE) ~ "Coverage",
+    #grepl("Accuracy", PerfMeasures, ignore.case = TRUE) ~ "Accuracy",
+    grepl("Accuracy", PerfMeasures, ignore.case = TRUE)|is.na(PerfMeasures) ~ "Not reported \nor unclear",
+    TRUE ~ "Other"
+  )) %>%
+  # Derive the counts for each category and the overall percentage
+  group_by(category) %>%
+  summarise(counts = n()) %>%
+  mutate(percentage = counts / sum(counts) * 100) %>%
+  ungroup() %>%
+  # Arrange by Counts descending for plotting
+  arrange(desc(counts))  %>%
+  mutate(category = factor(category, levels = unique(category))) 
+
+
+# Plot histogram with ordered categories
+plot_perf <- ggplot(perf_dat, aes(x = reorder(category, -counts), y = counts, fill = category)) +
+  geom_bar(stat = "identity") +
+  #fill=c(rep("skyblue",8),"#d9700f","skyblue")
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set3") +
+  labs(title = "Performance Measure", x = "", y = "percentage") +
+  #coord_flip() +
+  scale_y_continuous(breaks = seq(0,60, by=10)) +
+  theme(axis.text.x = element_text(size=14, angle = 45, vjust = 1, hjust=1)) +
+  theme(axis.text.y = element_text(size=14)) +
+  theme(legend.position = "none")
+  
+plot_perf 
 
 ```
 
-**Analysis of coding stage**
+**Coding stage**
 
 `6.3.software_type`	  What software(s) was used to run the simulation study? 
 
@@ -686,9 +776,40 @@ barplot(estimand_counts,
 #table(survey$`6.3.software_type`)
 
 # Software list
-software_list <- unlist(strsplit(survey$`6.3.software_type`, ";"))
+software_list <- survey$`6.3.software_type`
 
-# get histogram 
+# Format the vector into a dataframe and clean up the categories
+software_dat <- data.frame(Software=software_list) %>%
+  #separate_rows(Software, sep = ";|,") %>%
+  mutate(Software = case_when(
+           Software=="R" ~ "R",
+           grepl("JAGS|NIMBLE|R;Stan", Software, ignore.case = T) ~ "R with JAGS,\nNIMBLE or STAN",
+           grepl("python", Software, ignore.case = T) ~ "Python",
+           grepl("None", Software) ~ "Not reported",
+           TRUE ~ "Other"
+         ))
+
+# Derive the counts and percentages
+software_summary <- software_dat %>%
+  group_by(Software) %>%
+  summarise(counts = n()) %>%
+  mutate(Percentage = counts / sum(counts) * 100) %>% 
+  arrange(desc(counts)) %>%
+  mutate(Software = factor(Software, levels = unique(Software))) 
+
+
+# Plot histogram
+ggplot(software_summary, aes(x = reorder(Software, counts), y = counts, fill = Software)) +
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette = "Pastel2") +
+  theme_minimal() +
+  coord_flip()+
+  scale_y_continuous(breaks = seq(0,75, by=10)) +
+  labs(title = "Statistical software", x = "", y = "counts") +
+  theme(axis.text.x = element_text(size=14)) +
+  theme(axis.text.y = element_text(size=14)) +
+  theme(legend.position = "none")
+
 
 
 
@@ -728,7 +849,7 @@ ggplot(survey, aes(x = `7.3.code_datagen_basedonprevious`, fill = `7.3.code_data
 
 ```
 
-**Analysis of analysis stage**
+**Analysis stage**
 
 `9.1.analysis_exploratory`	  Was a working example or case study conducted?
 
@@ -760,10 +881,31 @@ create_hist <- function(survey, variable_name) {
           aspect.ratio = 1/2) 
 }
 
-# get plots
+# get plots for each variable
 create_hist(survey, "9.1.analysis_exploratory")
 create_hist(survey, "11.1.analysis_montecarlo_uncertainty")
 ```
+
+
+
+
+```{r}
+
+
+# Make plot for main text
+Figure_Characteristics <- (plot_aims | plot_datgen) /
+  (plot_dist | plot_estarget) /
+  (plot_method | plot_perf) +
+  plot_annotation(tag_levels = 'A') 
+
+# save 
+ggsave("output/Figure_Characteristics.png", Figure_Characteristics,
+       width = 11, height = 14, units = "in", dpi = 400)
+
+
+
+```
+
 
 # Important points
 
