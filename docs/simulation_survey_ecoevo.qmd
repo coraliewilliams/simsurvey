@@ -526,22 +526,40 @@ par_max <- max(survey$`2.5.1.datagen_parameters`, na.rm=T)
 # Set up data to plot
 datgen_pars <- data.frame(pars=survey$`2.5.1.datagen_parameters`)
 datgen_pars_clean <- na.omit(datgen_pars)
-# histogram 
-ggplot(datgen_pars_clean, aes(x=pars)) +
+# histogram of number of parameters
+plot_pars <- ggplot(datgen_pars_clean, aes(x=pars)) +
   geom_histogram(binwidth = 1, colour = "black", fill = "skyblue") +
   scale_fill_brewer(palette = "Pastel2") +
   scale_x_continuous(breaks = seq(0, 14, by = 1)) +
-  scale_y_continuous(breaks = seq(0,26, by=5)) +
+  scale_y_continuous(breaks = seq(0, 28, by=2)) +
   theme_minimal() +
   theme(axis.text.x = element_text(size=14)) +
   theme(axis.text.y = element_text(size=14)) +
-  labs(title = "Data-generating mechanism: number of parameters", x = "No. parameters", y = "frequency")
+  labs(title = "Number of simulated parameters", x = "No. parameters", y = "frequency")
+plot_pars
+
 
 
 ###### Number of conditions
 cond_mean <- mean(survey$`2.6.1.datagen_conditions`, na.rm=T)
 cond_min <- min(survey$`2.6.1.datagen_conditions`, na.rm=T)
 cond_max <- max(survey$`2.6.1.datagen_conditions`, na.rm=T)
+
+# Set up data to plot
+datgen_cond <- data.frame(cond=survey$`2.6.1.datagen_conditions`)
+datgen_cond_clean <- na.omit(datgen_cond)
+# make conditions as factor
+datgen_cond_clean$cond <- as.factor(datgen_cond_clean$cond)
+# histogram number of conditions
+plot_conds <- ggplot(datgen_cond_clean, aes(x=cond)) +
+  geom_bar(colour = "black", fill = "skyblue") +
+  theme_minimal() +
+  scale_y_continuous(breaks = seq(0, 6, by = 1)) +
+  #coord_flip() +
+  theme(axis.text.x = element_text(size=11, angle=45, hjust=1)) +
+  theme(axis.text.y = element_text(size=12)) +
+  labs(title = "Number of simulation conditions", x = "No. conditions", y = "frequency")
+plot_conds
 
 
 
@@ -554,33 +572,29 @@ runs_max <- max(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
 # Set up data to plot
 datgen_runs <- data.frame(runs=survey$`2.7.1.datagen_simulationruns`)
 datgen_runs$runs <- as.factor(datgen_runs$runs)
-# IMPROVE: rename level "NA" into "not stated"
-#datgen_runs[is.na(datgen_runs)] <- "not stated"
-
-
-
-# histogram 
-ggplot(datgen_runs, aes(x=runs)) +
+# histogram of number of simulation runs
+plot_simruns <- ggplot(datgen_runs, aes(x=runs)) +
   geom_bar(colour = "black", fill = "skyblue") +
-  #scale_x_continuous(breaks = seq(0, 50000, by = 10000)) +
-  #scale_y_continuous(breaks = seq(0,70, by=5)) +
+  scale_y_continuous(breaks = seq(0,28, by=5)) +
   theme_minimal() +
   coord_flip() +
   theme(axis.text.x = element_text(size=14)) +
   theme(axis.text.y = element_text(size=14)) +
-  labs(title = "Data-generating mechanism: number of simulation runs", x = "No. runs", y = "frequency")
-
+  labs(title = "Number of simulation runs", x = "No. runs", y = "frequency")
+plot_simruns
 
 
 
 ####### Simulation runs justified #######
 
-#table(survey$`2.7.3.datagen_simulationruns_justification`)
+#table(survey$`2.7.3.datagen_simulationruns_justification`, useNA = "ifany")
+
+```
 
 
 
 
-
+```{r}
 
 ####### Distribution #######
 
@@ -630,14 +644,12 @@ plot_dist
 ```
 
 
+
 ```{r}
 
 ###### 3: Estimand/Target ----------------------------------------------------------
 
-# not sure if we should count each time it is mentioned as separate (percentage per Target Type)
-# or specify the per article (different categories: both, all three, all four...)
-
-### Version 1 (count of all)
+# Estimand/target were counted for each time it was mentioned across all studies 
 
 #table(survey$`3.3.estimandtarget_type`)
 
@@ -761,6 +773,39 @@ plot_perf <- ggplot(perf_dat, aes(x = reorder(category, -counts), y = counts, fi
 plot_perf 
 
 ```
+
+
+```{r}
+####################################
+##### Save plots for main text #####
+####################################
+
+
+###### Figure 3: overall characteristics 
+Figure_Characteristics <- (plot_aims | plot_datgen) /
+  (plot_dist | plot_estarget) /
+  (plot_method | plot_perf) +
+  plot_annotation(tag_levels = 'A') 
+
+# save 
+ggsave("output/Figure_Characteristics.png", Figure_Characteristics,
+       width = 11, height = 14, units = "in", dpi = 400)
+
+
+####### Figure 4: data-generating mechanisms summary 
+Figure_DataGenMech <- (plot_pars | plot_simruns) / plot_conds +
+  plot_annotation(tag_levels = 'A') 
+
+# save 
+ggsave("output/Figure_DataGenerating.png", Figure_DataGenMech ,
+       width = 10, height = 10, units = "in", dpi = 400)
+
+```
+
+
+
+
+
 
 **Coding stage**
 
@@ -889,29 +934,62 @@ create_hist(survey, "11.1.analysis_montecarlo_uncertainty")
 
 
 
+## Summarised count results 
+
+Summarised counts of all variables with categories in survey. 
+
 ```{r}
 
+# function to set up frequency table for each variable
+create_frequency_table <- function(data, variable_name) {
+  freq_table <- table(data[[variable_name]], useNA = "ifany")
+  data.frame(
+    Variable = variable_name,
+    Category = names(freq_table),
+    Count = as.vector(freq_table)
+  )
+}
 
-# Make plot for main text
-Figure_Characteristics <- (plot_aims | plot_datgen) /
-  (plot_dist | plot_estarget) /
-  (plot_method | plot_perf) +
-  plot_annotation(tag_levels = 'A') 
+# list of all variable names
+variable_names <- c("1.3.aims_purpose", "2.3.datagen_type", "2.4.datagen_informed",
+                    "2.7.3.datagen_simulationruns_justification", "4.3.method_type"
+                    ,"7.3.code_datagen_basedonprevious", "9.1.analysis_exploratory",
+                    "11.1.analysis_montecarlo_uncertainty", "1.2.aims_reportingsection",
+                    "2.2.datagen_reportingsection", "2.5.2.datagen_parameters_section",
+                    "2.6.2.datagen_conditions_section", "2.7.2.datagen_simulationruns_section",
+                    "3.2.estimandtarget_reportingsection", "4.2.method_reportingsection",
+                    "5.2.perfmeasures_reportingsection", "6.2.software_reportingsection",
+                    "9.2.analysis_exploratory_reporting", "10.2.analysis_perfmeasures_reportingsection",
+                    "11.2.analysis_montecarlo_reportingsection")
 
-# save 
-ggsave("output/Figure_Characteristics.png", Figure_Characteristics,
-       width = 11, height = 14, units = "in", dpi = 400)
+# make table with summary frequencies of all results
+combined_table <- lapply(variable_names, create_frequency_table, data = survey) %>% 
+  bind_rows()
 
+# formatted table for output
+kable_output <- kable(combined_table, format = "html", caption = "Count of simulation studies per category") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
 
+# colorrrrs
+colors <- c("#CCCCFF", "#FFE4B5", "#CCFFCC", "#FFFFCC", "#CCFFFF", "#FFE4E1", "#FFCCFF", "#F0E68C", 
+            "#E6E6FA", "#FFFACD", "#ADD8E6", "#FFEFD5", "#AFEEEE", "#DDA0DD", "#FFCCCC","#F5F5DC",  
+            "#FFDAB9", "#E0FFFF", "#D8BFD8",  "#F5DEB3")
+
+# apply colors to rows
+for (i in seq_along(variable_names)) {
+  rows <- which(combined_table$Variable == variable_names[i])
+  if(length(rows) > 0) {
+    kable_output <- row_spec(kable_output, rows, background = colors[i %% length(colors) + 1])
+  }
+}
+
+# print - tada
+kable_output
 
 ```
 
 
 # Important points
-
-### Example of MCMC studies
-
-Example of papers including an analaysis using Monte Carlo Markov Chain (MCMC)
 
 ### Desirable properties of an estimator
 
