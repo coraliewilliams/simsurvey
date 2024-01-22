@@ -545,6 +545,8 @@ cond_mean <- mean(survey$`2.6.1.datagen_conditions`, na.rm=T)
 cond_min <- min(survey$`2.6.1.datagen_conditions`, na.rm=T)
 cond_max <- max(survey$`2.6.1.datagen_conditions`, na.rm=T)
 
+cond_med <- median(survey$`2.6.1.datagen_conditions`, na.rm=T)
+
 # Set up data to plot
 datgen_cond <- data.frame(cond=survey$`2.6.1.datagen_conditions`)
 datgen_cond_clean <- na.omit(datgen_cond)
@@ -568,6 +570,9 @@ survey$`2.7.1.datagen_simulationruns` <- as.numeric(survey$`2.7.1.datagen_simula
 runs_mean <- mean(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
 runs_min <- min(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
 runs_max <- max(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
+
+runs_med <- median(survey$`2.7.1.datagen_simulationruns`, na.rm=T)
+
 
 # Set up data to plot
 datgen_runs <- data.frame(runs=survey$`2.7.1.datagen_simulationruns`)
@@ -684,6 +689,8 @@ plot_estarget <- ggplot(estimand_counts, aes(x = reorder(estimand_list, -Freq), 
   theme(legend.position = "none")
 plot_estarget
 
+
+#estimand_counts
 
 ###### 4: Method -------------------------------------------------------------------
 
@@ -861,8 +868,8 @@ ggplot(software_summary, aes(x = reorder(Software, counts), y = counts, fill = S
 ###### 6: Software R package
 # super messy.... and not informative?
 package_list <- unlist(strsplit(survey$`6.5.software_Rpackage_name`, ";|,"))
-table(tolower(package_list))
-
+package_list <- data.frame(package_list)
+kable(table(package_list), format="html")
 
 ```
 
@@ -951,16 +958,25 @@ create_frequency_table <- function(data, variable_name) {
 }
 
 # list of all variable names
-variable_names <- c("1.3.aims_purpose", "2.3.datagen_type", "2.4.datagen_informed",
-                    "2.7.3.datagen_simulationruns_justification", "4.3.method_type"
-                    ,"7.3.code_datagen_basedonprevious", "9.1.analysis_exploratory",
-                    "11.1.analysis_montecarlo_uncertainty", "1.2.aims_reportingsection",
-                    "2.2.datagen_reportingsection", "2.5.2.datagen_parameters_section",
-                    "2.6.2.datagen_conditions_section", "2.7.2.datagen_simulationruns_section",
-                    "3.2.estimandtarget_reportingsection", "4.2.method_reportingsection",
-                    "5.2.perfmeasures_reportingsection", "6.2.software_reportingsection",
-                    "9.2.analysis_exploratory_reporting", "10.2.analysis_perfmeasures_reportingsection",
-                    "11.2.analysis_montecarlo_reportingsection")
+variable_names <- c(
+  "1.3.aims_purpose", "2.3.datagen_type", "2.4.datagen_informed",
+  "2.7.3.datagen_simulationruns_justification", "4.3.method_type",
+  "6.3.software_type", 
+  "7.3.code_datagen_basedonprevious", "9.1.analysis_exploratory",
+  "11.1.analysis_montecarlo_uncertainty", "1.1.aims_reporting",
+  "2.1.datagen_reporting", "3.1.estimandtarget_reporting",
+  "4.1.method_reporting", "5.1.perfmeasures_reporting",
+  "5.3.perfmeasures_lessknown", "6.1.software_reporting",
+  "6.4.software_Rpackage", "7.1.code_datagen",
+  "7.2.code_datagen_allsteps", "8.1.code_perfmeasures",
+  "10.1.analysis_perfmeasures_reporting", "1.2.aims_reportingsection",
+  "2.2.datagen_reportingsection", "2.5.2.datagen_parameters_section",
+  "2.6.2.datagen_conditions_section", "2.7.2.datagen_simulationruns_section",
+  "3.2.estimandtarget_reportingsection", "4.2.method_reportingsection",
+  "5.2.perfmeasures_reportingsection", "6.2.software_reportingsection",
+  "9.2.analysis_exploratory_reporting", "10.2.analysis_perfmeasures_reportingsection",
+  "11.2.analysis_montecarlo_reportingsection"
+)
 
 # make table with summary frequencies of all results
 combined_table <- lapply(variable_names, create_frequency_table, data = survey) %>% 
@@ -971,9 +987,12 @@ kable_output <- kable(combined_table, format = "html", caption = "Count of simul
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
 
 # colorrrrs
-colors <- c("#CCCCFF", "#FFE4B5", "#CCFFCC", "#FFFFCC", "#CCFFFF", "#FFE4E1", "#FFCCFF", "#F0E68C", 
-            "#E6E6FA", "#FFFACD", "#ADD8E6", "#FFEFD5", "#AFEEEE", "#DDA0DD", "#FFCCCC","#F5F5DC",  
-            "#FFDAB9", "#E0FFFF", "#D8BFD8",  "#F5DEB3")
+colors <- c("#CCCCFF", "#FFE4B5", "#CCFFCC", "#FD9ECC", "#CCFFFF", "#FFE4E1", "#FFCCFF", "#F0E68C", 
+            "#E6E6FA", "#DAE315", "#ADD8E6", "#FEEFD5", "#AAE1EE", "#DDA0DD", "#FFCCCC", "#A5F5EE",  
+            "#FFFD58", "#E0FFFF", "#D8BFD8", "#F5DEB3", "#F0FFF0", "#FAFAD2", "#FFF0F5", "#5EDDD2",
+            "#FFF5EE", "#A1EE55", "#F0FFFF", "#EDFBD7", "#F59EFA", "#FDF5E6", "#F1D8F0", "#F1C158",
+            "#FFF0F5", "#F1A993", "#D29DEE", "#FDD1FF", "#F0FFFF", "#F66EDD", "#F5D42D", "#FDF5E6")
+
 
 # apply colors to rows
 for (i in seq_along(variable_names)) {
@@ -995,7 +1014,7 @@ kable_output
 
 In statistics, an estimator is a function that is used to estimate a population parameter based on a sample of data. There are several desirable properties that an estimator may possess, including:
 
--   **Unbiasedness:** An estimator is said to be unbiased if its expected value is equal to the true value of the population parameter being estimated. This means that, on average, the estimator will produce estimates that are close to the true value. $E[hat{θ}]=θ$
+-   **Unbiasedness:** An estimator is said to be unbiased if its expected value is equal to the true value of the population parameter being estimated. This means that, on average, the estimator will produce estimates that are close to the true value. $E[\hat{θ}]=θ$
 
 -   **Consistency:** An estimator is said to be consistent if the difference between the estimated value and the true value of the population parameter tends to zero as the sample size increases. This means that the estimator will produce more accurate estimates as the amount of data used to estimate the parameter increases. $\hat{θ_n}→θ$ as $n→∞$
 
