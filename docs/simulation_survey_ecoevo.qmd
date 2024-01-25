@@ -1,6 +1,6 @@
 ---
 title: "Current Practices of Simulation Studies for Statistical Method Evaluation in Ecology and Evolutionary Biology"
-author: "Coralie Williams, Yefeng Yang, Malgorzata Lagisz, Kyle Morrison, Lorenzo Ricolfi, David Warton, and Shinichi Nakagawa"
+#author: "Coralie Williams, Yefeng Yang, Malgorzata Lagisz, Kyle Morrison, Lorenzo Ricolfi, David Warton, and Shinichi Nakagawa"
 date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
 format:
   html:
