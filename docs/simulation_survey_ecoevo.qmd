@@ -1012,7 +1012,7 @@ kable_output
 ```
 
 
-# Important points
+# Appendix
 
 ### Desirable properties of an estimator
 
@@ -1024,7 +1024,7 @@ In statistics, an estimator is a function that is used to estimate a population 
 
 -   **Efficiency:** An estimator is said to be efficient if it has a smaller variance than other estimators that are unbiased and consistent. This means that the estimator will produce estimates that are more precise, on average, than other estimators. $Var(\hat{θ})$
 
-Additionally, combinations:
+Additionally, other properties:
 
 -   **Sufficiency:** An estimator is said to be sufficient if it is a function of all the relevant information in the data. This means that no other estimator can produce estimates that are more accurate, on average, than the sufficient estimator.
 
@@ -1033,6 +1033,8 @@ Additionally, combinations:
 # References
 
 Morris, T. P., White, I. R., & Crowther, M. J. (2019). Using simulation studies to evaluate statistical methods. Statistics in Medicine, 38(11), 2074--2102. <https://doi.org/10.1002/sim.8086>
+
+
 
 # Session info
 
