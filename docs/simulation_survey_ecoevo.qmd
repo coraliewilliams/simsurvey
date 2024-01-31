@@ -34,15 +34,13 @@ options(digits = 3, scipen = 5)
 
 # Background
 
-Simulation studies hold a central role in evaluating statistical methodologies. Conducting a simulation study is similar to an experiment. In a simulation study the underlying process of generating the data is known, and the statistical performance can be assessed under diverse scenarios. Here, we present the findings from a survey of 96 research articles in ecology and evolutionary biology journals that use at least one simulation study to evaluate statistical methods.
+Simulation studies hold a central role in evaluating statistical methodologies. Conducting a simulation study is similar to an experiment. In a simulation study the underlying process of generating the data is known, and the statistical performance can be assessed under diverse scenarios. Here, we present the findings from a survey of 100 research articles in ecology and evolutionary biology journals that use at least one simulation study to evaluate statistical method(s).
 
 A framework called ADEMP (Aims, Data-generating mechanisms, Methods, Estimand/statistical target, Performance measures) was introduced by Morris et al. (2019, Stat Med, 38, p2074), and provides key steps to plan, code, analyse, and report simulation studies.
 
 Using the ADEMP framework as a basis, we put together a list of reporting items to characterise and assess the reporting practices of simulation studies. Our results provide an overview of the current state of simulation studies in ecology and evolutionary biology.
 
 # Objectives
-
-Using the ADEMP+ framework our objective are:
 
 1)   Survey the characteristics of simulation studies evaluating statistical methodologies in ecology and evolutionary biology.
 
@@ -100,15 +98,23 @@ The custom search string was developed on 13/10/2022 on Web of Science
 **(TS=((simulation\*) AND ("method") AND ("compar" OR "evaluat" OR "validat" OR "statist") AND (bias OR coverag\* OR power OR convergence OR"standard error" OR "confidence interval" OR "performance measure" OR "mean error" OR "type I error"))) AND WC=("Ecology" OR "Evolutionary Biology"**
 :::
 
-## Inclusion and exclusion criteria
+## Inclusioncriteria
 
--   Include publications between 01-01-2012 and 01-09-2022.
--   Include studies using simulation for the evaluation of statistical methodologies. Simulation studies that are not assessing methods in statistics will be excluded (for example simulation studies to assess ecological theories: <https://doi.org/10.1016/j.ecolmodel.2019.02.007>).
--   Simulation studies that are part of a review, commentary, letter to the editor or tutorial will be excluded (for example: <https://doi.org/10.1111/2041-210X.1380>) Included studies published in one of predefined journals in Table 1.
--   Include if: Full text is available and full text is in English
+-   Include publications between 01-01-2018 and 01-10-2022.
+-   Include studies using simulation for the evaluation of statistical methodologies. 
+-   Included studies published in one of predefined journals in Table 1.
+-   Include if full text is available 
+-   Include if full text is in English
+
+## Exclusion criteria
+
+-   Exclude simulation studies that are part of a review, commentary, letter to the editor or tutorial (for example:  <https://doi.org/10.1111/ecog.04385>).
+-   Exclude simulation studies that are not evaluating statistical methods (for example simulation studies to assess ecological theories: <https://doi.org/10.1016/j.ecolmodel.2019.02.007>).
+-   Exclude simulation studies if assessing
+
 
 ::: column-margin
-Note, exclusion term criteria were added post-hoc.
+Note, exclusion term criteria were refined post-hoc.
 :::
 
 ### Deviations and additions
@@ -140,7 +146,7 @@ extra_6papers <- rayyan_50papers %>%
 
 ```{r}
 # Load text extraction
-survey_raw <- read_excel("~/Projects/simsurvey/data/survey/simulationSurvey_extraction_100papers_23012024.xlsx", na=c("", "NA", NA))
+survey_raw <- read_excel("~/Projects/simsurvey/data/survey/simulationSurvey_extraction_100papers.xlsx", na=c("", "NA", NA))
 # remove questions that are comments
 survey <- survey_raw %>% select(!matches("comment"))
 
@@ -798,7 +804,7 @@ Figure_Characteristics <- (plot_aims | plot_datgen) /
   (plot_method | plot_perf) +
   plot_annotation(tag_levels = 'A') 
 
-# save 
+# save for manuscript
 ggsave("output/Figure_Characteristics.png", Figure_Characteristics,
        width = 11, height = 14, units = "in", dpi = 400)
 
@@ -807,7 +813,7 @@ ggsave("output/Figure_Characteristics.png", Figure_Characteristics,
 Figure_DataGenMech <- (plot_pars | plot_simruns) / plot_conds +
   plot_annotation(tag_levels = 'A') 
 
-# save 
+# save for manuscript
 ggsave("output/Figure_DataGenerating.png", Figure_DataGenMech ,
        width = 10, height = 10, units = "in", dpi = 400)
 
@@ -900,6 +906,8 @@ ggplot(survey, aes(x = `7.3.code_datagen_basedonprevious`, fill = `7.3.code_data
   scale_fill_manual(values = colors) +
   scale_y_continuous(breaks = seq(0, 100, by = 10), limits = c(0, 100)) +
   theme_minimal() +
+  theme(axis.text.x = element_text(size=14)) +
+  theme(axis.text.y = element_text(size=14)) +
   theme(legend.position = "bottom")  
 
 
@@ -932,9 +940,10 @@ create_hist <- function(survey, variable_name) {
     scale_x_continuous(breaks = seq(0, 100, by = 10), limits = c(0, 100)) +
     scale_fill_manual(values = colors) +
     labs(y = variable_name, x = "Count") +
+    theme(axis.text.x = element_text(size=14)) +
+    theme(axis.text.y = element_text(size=14)) +
     theme_minimal() +
-    theme(legend.position = "bottom",
-          aspect.ratio = 1/2) 
+    theme(legend.position = "bottom", aspect.ratio = 1/2) 
 }
 
 # get plots for each variable
@@ -1010,6 +1019,41 @@ for (i in seq_along(variable_names)) {
 kable_output
 
 ```
+
+
+## Reviewer agreement
+
+```{r}
+# load data
+datcrosscheck <- read_excel("~/Projects/simsurvey/data/survey/simsurvey_crosscheck_summary.xlsx", na=c("", "NA", NA))
+
+# convert into percentages
+max_value <- max(datcrosscheck$crosscheck_agreement)
+datcrosscheck$crosscheck_agreement_percent <- (datcrosscheck$crosscheck_agreement / max_value) * 100
+
+# make into factor with same order as in excel sheet
+datcrosscheck$survey_question <- factor(datcrosscheck$survey_question,
+                                        levels = rev(datcrosscheck$survey_question))
+
+# make lollipop plot of crosscheck agreement
+p <- ggplot(datcrosscheck, aes(x = crosscheck_agreement_percent, y = survey_question)) +
+  geom_segment(aes(x = 0,
+                   xend = crosscheck_agreement_percent,
+                   yend = survey_question), colour = "darkgray") +
+  geom_point(colour = "deepskyblue3", size = 2) +
+  labs(x = "Crosscheck Agreement (%)", y = "Survey Question") +
+  coord_fixed(4) +
+  theme_minimal()
+
+print(p)
+
+# save plot for manuscript
+ggsave("output/crosscheck_agreement_lollipop.png", p,
+       width = 8, height = 10, units = "in", bg="white", dpi = 400)
+
+
+```
+
 
 
 # Appendix
