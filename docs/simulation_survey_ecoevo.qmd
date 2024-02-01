@@ -98,19 +98,20 @@ The custom search string was developed on 13/10/2022 on Web of Science
 **(TS=((simulation\*) AND ("method") AND ("compar" OR "evaluat" OR "validat" OR "statist") AND (bias OR coverag\* OR power OR convergence OR"standard error" OR "confidence interval" OR "performance measure" OR "mean error" OR "type I error"))) AND WC=("Ecology" OR "Evolutionary Biology"**
 :::
 
-## Inclusioncriteria
+## Inclusion criteria
 
 -   Include publications between 01-01-2018 and 01-10-2022.
 -   Include studies using simulation for the evaluation of statistical methodologies. 
--   Included studies published in one of predefined journals in Table 1.
--   Include if full text is available 
--   Include if full text is in English
-
+-   Included studies published in one of predefined journals in ecology or evolutionary biology.
+-   Include if full text is available.
+-   Include if full text is in English.
+.
 ## Exclusion criteria
 
 -   Exclude simulation studies that are part of a review, commentary, letter to the editor or tutorial (for example:  <https://doi.org/10.1111/ecog.04385>).
 -   Exclude simulation studies that are not evaluating statistical methods (for example simulation studies to assess ecological theories: <https://doi.org/10.1016/j.ecolmodel.2019.02.007>).
--   Exclude simulation studies if assessing
+-   Exclude simulation studies that are used to solely analyse data e.g. Monte Carlo Markov Chain (MCMC) simulations.
+-   Exclude simulation studies who are not the main part of the paper.
 
 
 ::: column-margin
@@ -592,8 +593,8 @@ plot_simruns <- ggplot(datgen_runs, aes(x=runs)) +
   geom_bar(colour = "black", fill = "skyblue") +
   scale_y_continuous(breaks = seq(0,28, by=5)) +
   theme_minimal() +
-  coord_flip() +
-  theme(axis.text.x = element_text(size=14)) +
+  #coord_flip() +
+  theme(axis.text.x = element_text(size=14,angle=45, hjust=1)) +
   theme(axis.text.y = element_text(size=14)) +
   labs(title = "Number of simulation runs", x = "No. runs", y = "frequency")
 plot_simruns
