@@ -170,6 +170,20 @@ r <- c("1.1.aims_reporting",
        "8.1.code_perfmeasures",
        "10.1.analysis_perfmeasures_reporting")
 
+r_labels <- c("1.aims", 
+              "2.data generation mechanisms", 
+              "3.estimand/target",
+              "4.method",
+              "5.performance measures",
+              "5.performance measures less known",
+              "6.software",
+              "6.software package",
+              "7.code for data generation",
+              "7.code for all simulation steps",
+              "8.code for performance measures",
+              "10.analysis in graphical or tabular form")
+
+
 # only planning stage 
 r1 <- c("1.1.aims_reporting", 
        "2.1.datagen_reporting", 
@@ -199,6 +213,19 @@ rs <- c("1.2.aims_reportingsection",
         "9.2.analysis_exploratory_reporting",
         "10.2.analysis_perfmeasures_reportingsection",
         "11.2.analysis_montecarlo_reportingsection")
+
+rs_labels <- c("1.aims", 
+          "2.data generation mechanisms", 
+          "2.data gen. no. of parameters",
+          "2.data gen. no. of conditions",
+          "2.data gen. no. of simulation runs",
+          "3.estimand/target",
+          "4.method",
+          "5.performance measures",
+          "6.software",
+          "9.analysis with a case study",
+          "10.analysis in graphical or tabular form",
+          "11.analysis monte carlo uncertainty")
 
 # only planning stage
 rs1 <- c("1.2.aims_reportingsection", 
@@ -287,29 +314,36 @@ The following questions were focused on simulation studies reporting quality:
 
 ```{r}
 
-# Function to make horizontal histogram of reporting practices questions
-create_plot <- function(survey, r_vector, title) {
+# Function to make horizontal histogram of reporting descripton + reporting section questions
+create_plot <- function(survey, r_vector, title, labels) {
+  
+  # select columns of interest
   r_long <- survey %>% 
     select(all_of(r_vector)) %>%
     pivot_longer(cols = everything())
-
+  
+  # summarise by name and value
   count_r <- r_long %>% 
     group_by(name, value) %>% 
     count()
 
+  # get the total number per category
   count_r <- count_r %>% 
     group_by(name) %>% 
     mutate(total=sum(n))
-
+  
+  # get percentages
   percent_r <- count_r %>% 
     mutate(proportion = n/total,
            percentage = proportion * 100)
 
-  percent_r$name <- factor(percent_r$name, levels=rev(r_vector))
+  # rename and reorder labels of questions
+  percent_r$name <- plyr::mapvalues(percent_r$name, from=r_vector, to=labels)
+  percent_r$name <- factor(percent_r$name, levels=rev(labels))
   percent_r$value <- replace_na(percent_r$value, "N.A.")
   percent_r$value <- factor(percent_r$value, levels=c("N.A.", "No", "Yes"))
 
-  
+  # make ggplot
   ggplot(data = percent_r, aes(x = name, y = percentage, fill = value)) +
     geom_col(width = 0.7, color = "black") +
     coord_flip(ylim = c(0, 100)) +
@@ -322,14 +356,14 @@ create_plot <- function(survey, r_vector, title) {
     theme(axis.text.x = element_text(size=14))  +
     theme(axis.text.y = element_text(size=14))  +
     ylab("Percentage (%)") +
-    xlab("Survey Question")
+    xlab("Survey question")
 }
 
 # Apply the function to each question group
-fig1 <- create_plot(survey, r1, "Reporting in planning stage")
-fig2 <- create_plot(survey, r2, "Reporting in coding stage")
-fig3 <- create_plot(survey, r3, "Reporting in analysis stage")
-supp1 <- create_plot(survey, r, "Reporting practices")
+# fig1 <- create_plot(survey, r1, "Reporting in planning stage")
+# fig2 <- create_plot(survey, r2, "Reporting in coding stage")
+# fig3 <- create_plot(survey, r3, "Reporting in analysis stage")
+supp1 <- create_plot(survey, r, "Reporting description", labels=r_labels)
 
 # Plot the figures
 print(supp1)
@@ -368,10 +402,10 @@ The following questions were focused on simulation studies reporting section:
 ```{r}
 
 # Apply the function to each question group
-fig4 <- create_plot(survey, rs1, "Reporting section for planning stage")
-fig5 <- create_plot(survey, rs2, "Reporting section for coding stage")
-fig6 <- create_plot(survey, rs3, "Reporting section for analysis stage")
-supp2 <- create_plot(survey, rs, "Reporting section practices")
+#fig4 <- create_plot(survey, rs1, "Reporting section for planning stage")
+#fig5 <- create_plot(survey, rs2, "Reporting section for coding stage")
+#fig6 <- create_plot(survey, rs3, "Reporting section for analysis stage")
+supp2 <- create_plot(survey, rs, "Reporting section", rs_labels)
 
 # Plot the figures
 print(supp2)
@@ -381,7 +415,8 @@ Figure_ReportingPractices <- supp1 / supp2 +
   plot_annotation(tag_levels = 'A')
 
 # save 
-ggsave("output/Figure_ReportingPractices_allStages.png", Figure_ReportingPractices)
+ggsave("output/Figure_ReportingPractices_allStages.png", Figure_ReportingPractices,
+       width = 11, height = 9, dpi = 400, units = "in", bg = "transparent")
 
 ```
 
@@ -815,7 +850,7 @@ Figure_DataGenMech <- (plot_pars | plot_simruns) / plot_conds +
   plot_annotation(tag_levels = 'A') 
 
 # save for manuscript
-ggsave("output/Figure_DataGenerating.png", Figure_DataGenMech ,
+ggsave("output/Figure_DataGenMech.png", Figure_DataGenMech ,
        width = 10, height = 10, units = "in", dpi = 400)
 
 ```
