@@ -568,6 +568,7 @@ ggplot(datgen_inform_summary, aes(x = reorder(datgen_inform, counts), y = counts
 par_mean <- mean(survey$`2.5.1.datagen_parameters`, na.rm=T)
 par_min <- min(survey$`2.5.1.datagen_parameters`, na.rm=T)
 par_max <- max(survey$`2.5.1.datagen_parameters`, na.rm=T)
+par_median <- median(survey$`2.5.1.datagen_parameters`, na.rm=T)
 
 # Set up data to plot
 datgen_pars <- data.frame(pars=survey$`2.5.1.datagen_parameters`)
