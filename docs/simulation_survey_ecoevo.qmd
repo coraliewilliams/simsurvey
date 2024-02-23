@@ -680,12 +680,12 @@ dist_summary <- dist_new %>%
 
 
 # Plot histogram
-plot_dist <- ggplot(dist_summary, aes(x = Distribution, y = counts, fill = Distribution)) +
+plot_dist <- ggplot(dist_summary, aes(x = Distribution, y = Percentage, fill = Distribution)) +
   geom_bar(stat = "identity") +
   scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   scale_y_continuous(breaks = seq(0,50, by=5)) +
-  labs(title = "Statistical Distributions", x = "", y = "percentage") +
+  labs(title = "Statistical Distributions", x = "", y = "percentage of occurences") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size=14)) +
   theme(axis.text.y = element_text(size=14)) +
   theme(legend.position = "none")
@@ -723,13 +723,17 @@ estimand_counts <- estimand_counts %>%
     estimand_list=="Model (model selection)" ~ "Model selection"
   ))
 
+# get percentage from counts
+estimand_perct <- estimand_counts %>% 
+  mutate(Freq = Freq / sum(Freq) * 100)
+
 # Plot histogram
-plot_estarget <- ggplot(estimand_counts, aes(x = reorder(estimand_list, -Freq), y = Freq, fill = estimand_list)) +
+plot_estarget <- ggplot(estimand_perct, aes(x = reorder(estimand_list, -Freq), y = Freq, fill = estimand_list)) +
   geom_bar(stat = "identity") +
   scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   #coord_flip() +
-  labs(title = "Statistical target", x = "", y = "percentage") +
+  labs(title = "Statistical target", x = "", y = "percentage of occurences") +
   scale_y_continuous(breaks = seq(0,70, by=10)) +
   theme(axis.text.x = element_text(size=14, angle=45, hjust=1)) +
   theme(axis.text.y = element_text(size=14)) +
@@ -811,15 +815,16 @@ perf_dat <- data.frame(PerfMeasures = perf_measures) %>%
   mutate(category = factor(category, levels = unique(category))) 
 
 
+
 # Plot histogram with ordered categories
-plot_perf <- ggplot(perf_dat, aes(x = reorder(category, -counts), y = counts, fill = category)) +
+plot_perf <- ggplot(perf_dat, aes(x = reorder(category, -percentage), y = percentage, fill = category)) +
   geom_bar(stat = "identity") +
   #fill=c(rep("skyblue",8),"#d9700f","skyblue")
   theme_minimal() +
   scale_fill_brewer(palette = "Set3") +
-  labs(title = "Performance Measure", x = "", y = "percentage") +
+  labs(title = "Performance Measure", x = "", y = "percentage of occurences") +
   #coord_flip() +
-  scale_y_continuous(breaks = seq(0,60, by=10)) +
+  scale_y_continuous(breaks = seq(0,25, by=5)) +
   theme(axis.text.x = element_text(size=14, angle = 45, vjust = 1, hjust=1)) +
   theme(axis.text.y = element_text(size=14)) +
   theme(legend.position = "none")
@@ -877,9 +882,22 @@ ggsave("output/Figure_DataGenMech.png", Figure_DataGenMech ,
 # Software list
 software_list <- survey$`6.3.software_type`
 
-# Format the vector into a dataframe and clean up the categories
+# get summary for just R across all articles
+software_R <- data.frame(Software=software_list) %>%
+  separate_rows(Software, sep = ";|,") %>% 
+  mutate(Software = case_when(
+           Software=="R" ~ "R",
+           TRUE ~ "Other"
+         ))
+
+# Derive the counts and percentages
+software_R_summary <- software_R %>%
+  group_by(Software) %>%
+  summarise(counts = n()) 
+
+
+# get summary for combinations of software
 software_dat <- data.frame(Software=software_list) %>%
-  #separate_rows(Software, sep = ";|,") %>%
   mutate(Software = case_when(
            Software=="R" ~ "R",
            grepl("JAGS|NIMBLE|R;Stan", Software, ignore.case = T) ~ "R with JAGS,\nNIMBLE or STAN",
