@@ -9,12 +9,16 @@ format:
     toc-depth: 2
     theme: sandstone
     embed-resources: true
-    code-fold: true
+    code-fold: show
     code-tools: true
     number-sections: true
 editor_options: 
   chunk_output_type: console
 ---
+
+In this study we surveyed 100 research articles in ecology and evolution journals that included simulation studies evaluating statistical methods. The following HTML webpage provides the code necessary to reproduce the analysis conducted in the paper, along with detailed explanations of the methods and results.
+
+**Load packages**
 
 ```{r setup}
 #| output: false
@@ -24,27 +28,28 @@ editor_options:
 #| code-fold: true
 
 pacman::p_load(
-  rmarkdown, readr, dplyr, purrr, splitstackshape, tidyverse, tidyr, ggplot2,
-  vroom, details, sessioninfo, devtools, readxl, forcats, stringr, RColorBrewer,
-  patchwork, kableExtra
+  rmarkdown,
+  readr,
+  dplyr,
+  purrr,
+  splitstackshape,
+  tidyverse,
+  tidyr,
+  ggplot2,
+  vroom,
+  details,
+  sessioninfo,
+  devtools,
+  readxl,
+  forcats,
+  stringr,
+  RColorBrewer,
+  patchwork,
+  kableExtra
 )
 
 options(digits = 3, scipen = 5)
 ```
-
-# Background
-
-Simulation studies hold a central role in evaluating statistical methodologies. Conducting a simulation study is similar to an experiment. In a simulation study the underlying process of generating the data is known, and the statistical performance can be assessed under diverse scenarios. Here, we present the findings from a survey of 100 research articles in ecology and evolutionary biology journals that use at least one simulation study to evaluate statistical method(s).
-
-A framework called ADEMP (Aims, Data-generating mechanisms, Methods, Estimand/statistical target, Performance measures) was introduced by Morris et al. (2019, Stat Med, 38, p2074), and provides key steps to plan, code, analyse, and report simulation studies.
-
-Using the ADEMP framework as a basis, we put together a list of reporting items to characterise and assess the reporting practices of simulation studies. Our results provide an overview of the current state of simulation studies in ecology and evolutionary biology.
-
-# Objectives
-
-1)   Survey the characteristics of simulation studies evaluating statistical methodologies in ecology and evolutionary biology.
-
-2)   Assess the reporting practices of these simulation studies evaluating statistical methodologies in ecology and evolutionary biology.
 
 # Literature search
 
@@ -52,19 +57,15 @@ Using the ADEMP framework as a basis, we put together a list of reporting items 
 
 ```{r journalList, warning=F, message=F}
 # Load journal lists
-jcr_stats <- read_csv("~/Projects/simsurvey/data/JCR/JCR_JournalResults_09_2022_Statistics_and_Probability.csv", skip = 2)
 jcr_eco <- read_csv("~/Projects/simsurvey/data/JCR/JCR_JournalResults_09_2022_Ecology.csv", skip = 2)
 jcr_evo <- read_csv("~/Projects/simsurvey/data/JCR/JCR_JournalResults_09_2022_Evolutionary_Biology.csv", skip = 2)
 
-# Clean: delete empty rows and comment lines at the end of files
-jcr_stats <- jcr_stats[which(!is.na(jcr_stats$ISSN)),]
+# Cleanup: delete empty rows and comment lines at the end of files
 jcr_eco <- jcr_eco[which(!is.na(jcr_eco$ISSN)),]
 jcr_evo <- jcr_evo[which(!is.na(jcr_evo$ISSN)),]
 
 
 # Check how many journals overlap between each journal group: none with stats journal list, and 18 journals between eco and evo
-stats_in_eco <- jcr_stats[which(jcr_stats$`Journal name` %in% jcr_eco$`Journal name`),]
-stats_in_evo <- jcr_stats[which(jcr_stats$`Journal name` %in% jcr_evo$`Journal name`),]
 eco_in_evo <- jcr_eco$`Journal name`[which(jcr_eco$`Journal name` %in% jcr_evo$`Journal name`)]
 evo_in_eco <- jcr_evo$`Journal name`[which(jcr_evo$`Journal name` %in% jcr_eco$`Journal name`)]
 
@@ -79,7 +80,6 @@ ecoevo_match$Category <- "Both"
 ecoevo_match$`JIF Quartile` <- "NA"
 ecoevo_notmatch <- ecoevo[which(!ecoevo$`Journal name` %in% ecoevo_match$`Journal name`),]
 
-
 # get merged list of journals from eco and evo
 ecoevo_merged <- rbind(ecoevo_match, ecoevo_notmatch)
 
@@ -87,8 +87,6 @@ ecoevo_merged <- rbind(ecoevo_match, ecoevo_notmatch)
 write_csv(ecoevo_merged, "~/Projects/simsurvey/data/ecoevo_jcr_journal_list.csv", na="")
 
 ```
-
-
 
 ## Search strings
 
@@ -101,18 +99,17 @@ The custom search string was developed on 13/10/2022 on Web of Science
 ## Inclusion criteria
 
 -   Include publications between 01-01-2018 and 01-10-2022.
--   Include studies using simulation for the evaluation of statistical methodologies. 
+-   Include studies using simulation for the evaluation of statistical methodologies.
 -   Included studies published in one of predefined journals in ecology or evolutionary biology.
 -   Include if full text is available.
 -   Include if full text is in English.
-.
+
 ## Exclusion criteria
 
--   Exclude simulation studies that are part of a review, commentary, letter to the editor or tutorial (for example:  <https://doi.org/10.1111/ecog.04385>).
+-   Exclude simulation studies that are part of a review, commentary, letter to the editor or tutorial (for example: <https://doi.org/10.1111/ecog.04385>).
 -   Exclude simulation studies that are not evaluating statistical methods (for example simulation studies to assess ecological theories: <https://doi.org/10.1016/j.ecolmodel.2019.02.007>).
 -   Exclude simulation studies that are used to solely analyse data e.g. Monte Carlo Markov Chain (MCMC) simulations.
 -   Exclude simulation studies who are not the main part of the paper.
-
 
 ::: column-margin
 Note, exclusion term criteria were refined post-hoc.
@@ -120,7 +117,7 @@ Note, exclusion term criteria were refined post-hoc.
 
 ### Deviations and additions
 
-Five articles were added post-hoc to the search and screening to reach 100 articles. 
+Five articles were added post-hoc to the search and screening to reach 100 articles.
 
 ```{r}
 # 10/11/2023
@@ -141,8 +138,6 @@ extra_6papers <- rayyan_50papers %>%
 
 ```
 
-
-
 # Analysis
 
 ```{r}
@@ -152,7 +147,6 @@ survey_raw <- read_excel("~/Projects/simsurvey/data/survey/simulationSurvey_extr
 survey <- survey_raw %>% select(!matches("comment"))
 
 ```
-
 
 ```{r}
 
@@ -245,8 +239,6 @@ rs3 <- c("9.2.analysis_exploratory_reporting",
 
 ```
 
-
-
 ### Literature search results
 
 ```{r}
@@ -282,35 +274,33 @@ ggplot(survey, aes(x = paper_year)) +
 
 ```
 
-
 ## Reporting results
 
 The following questions were focused on simulation studies reporting quality:
 
 `1.1.aims_reporting` Are the aims of the simulation defined?
 
-`2.1.datagen_reporting` Is the data-generating mechanisms described? 
+`2.1.datagen_reporting` Is the data-generating mechanisms described?
 
-`2.4.datagen_informed`	Are the specifications of the data-generating mechanisms informed (i.e. justified with a reference or narrative justification)?
+`2.4.datagen_informed` Are the specifications of the data-generating mechanisms informed (i.e. justified with a reference or narrative justification)?
 
-`3.1.estimandtarget_reporting`	Were the estimand(s), statistical target and task of the simulation study described?
+`3.1.estimandtarget_reporting` Were the estimand(s), statistical target and task of the simulation study described?
 
-`4.1.method_reporting`	Is the study citing other relevant statistical methodology literature on the topic?
+`4.1.method_reporting` Is the study citing other relevant statistical methodology literature on the topic?
 
 `5.1.perfmeasures_reporting` Were all performance measures planned to be investigated defined or described?
 
-`5.3.perfmeasures_lessknown`	If a performance measure planned to be used is less-known, was the formula given explicitly?
+`5.3.perfmeasures_lessknown` If a performance measure planned to be used is less-known, was the formula given explicitly?
 
-`6.1.software_reporting`	Is/Are all software(s) and all package(s) used in the simulation study reported explicitly?
+`6.1.software_reporting` Is/Are all software(s) and all package(s) used in the simulation study reported explicitly?
 
 `6.4.software_Rpackage` If R statistical software was used, were the packages that were used reported?
 
-`7.1.code_datagen`	Is the code to execute the simulation study made available?
+`7.1.code_datagen` Is the code to execute the simulation study made available?
 
-`7.2.code_datagen_allsteps`	Does the code include data generating and analysis simulation steps?
+`7.2.code_datagen_allsteps` Does the code include data generating and analysis simulation steps?
 
-`8.1.code_perfmeasures`	Is the code to obtain performance measures made available?
-
+`8.1.code_perfmeasures` Is the code to obtain performance measures made available?
 
 ```{r}
 
@@ -374,30 +364,29 @@ print(supp1)
 
 The following questions were focused on simulation studies reporting section:
 
-`1.2.aims_reportingsection`	Are the aims of the simulation study defined in the Introduction or Methods section?
+`1.2.aims_reportingsection` Are the aims of the simulation study defined in the Introduction or Methods section?
 
-`2.2.datagen_reportingsection`	Is the data-generating mechanisms described in the Methods section?
+`2.2.datagen_reportingsection` Is the data-generating mechanisms described in the Methods section?
 
-`2.5.2.datagen_parameters_section`	Are the varying parameters reported explicitly in the Methods section?
+`2.5.2.datagen_parameters_section` Are the varying parameters reported explicitly in the Methods section?
 
-`2.6.2.datagen_conditions_section`	Are the number of conditions reported explicitly in the Methods section?
+`2.6.2.datagen_conditions_section` Are the number of conditions reported explicitly in the Methods section?
 
-`2.7.2.datagen_simulationruns_section`	Are the number simulation runs reported explicitly in the Methods section?
+`2.7.2.datagen_simulationruns_section` Are the number simulation runs reported explicitly in the Methods section?
 
-`3.2.estimandtarget_reportingsection`	Is/Are the estimands or statistical targets/task described in the Methods section?
+`3.2.estimandtarget_reportingsection` Is/Are the estimands or statistical targets/task described in the Methods section?
 
-`4.2.method_reportingsection`	Is the study citing other relevant statistical methodology in the Introduction and/or Methods?
+`4.2.method_reportingsection` Is the study citing other relevant statistical methodology in the Introduction and/or Methods?
 
-`5.2.perfmeasures_reportingsection`	Were performance measures planned to be investigated defined or described in the Methods section?
+`5.2.perfmeasures_reportingsection` Were performance measures planned to be investigated defined or described in the Methods section?
 
-`6.2.software_reportingsection`	Were the software(s) and package(s) used in the simulation study reported in Methods or Results section?
+`6.2.software_reportingsection` Were the software(s) and package(s) used in the simulation study reported in Methods or Results section?
 
 `9.2.analysis_exploratory_reporting` Was a working example or case study reported in the Results or Supplementary Material section?
 
-`10.2.analysis_perfmeasures_reportingsection`	Were all performance measures results reported in the Results or Supplementary Material? 
+`10.2.analysis_perfmeasures_reportingsection` Were all performance measures results reported in the Results or Supplementary Material?
 
-`11.2.analysis_montecarlo_reportingsection`	Are Monte Carlo error reported in the Results or Supplementary Material section?
-
+`11.2.analysis_montecarlo_reportingsection` Are Monte Carlo error reported in the Results or Supplementary Material section?
 
 ```{r}
 
@@ -420,37 +409,33 @@ ggsave("output/Figure_ReportingPractices_allStages.png", Figure_ReportingPractic
 
 ```
 
-
-
 ## Characteristics results
 
 The following questions were focused on simulation studies characteristics:
 
 **Planning stage**
 
-`1.3.aims_purpose`	What is the purpose of the simulation study?
+`1.3.aims_purpose` What is the purpose of the simulation study?
 
-`2.3.datagen_type`	 What type of data-generating mechanism was used?
+`2.3.datagen_type` What type of data-generating mechanism was used?
 
 `2.4.datagen_informed` Are the specifications of the data-generating mechanisms informed?
 
 `2.5.1.datagen_parameters` How many varying parameters were used in data-generating mechanisms?
 
-`2.6.1.datagen_conditions`	How many conditions were used in total in the simulation study? (varying parameter combination)
+`2.6.1.datagen_conditions` How many conditions were used in total in the simulation study? (varying parameter combination)
 
-`2.7.1.datagen_simulationruns`	What is the number of simulation runs performed? (report the maximum number used)
+`2.7.1.datagen_simulationruns` What is the number of simulation runs performed? (report the maximum number used)
 
 `2.7.3.datagen_simulationruns_justification` Was the number simulation runs justified?
 
-`2.8.datagen_distribution`	If a parametric model was used, what was/were the distribution type(s) used?  
+`2.8.datagen_distribution` If a parametric model was used, what was/were the distribution type(s) used?
 
-`3.3.estimandtarget_type`	What is/are the estimands or statistical targets/task of the simulation study?
+`3.3.estimandtarget_type` What is/are the estimands or statistical targets/task of the simulation study?
 
-`4.3.method_type`	What is the simulation study evaluating? 
+`4.3.method_type` What is the simulation study evaluating?
 
-`5.4.perfmeasures`	What performance measure(s) were planned to be investigated in the simulation study? 
-
-
+`5.4.perfmeasures` What performance measure(s) were planned to be investigated in the simulation study?
 
 ```{r}
 ###### 1: Aims --------------------------------------------------------------------------------
@@ -643,9 +628,6 @@ plot_simruns
 
 ```
 
-
-
-
 ```{r}
 
 ####### Distribution #######
@@ -694,8 +676,6 @@ plot_dist
 
 
 ```
-
-
 
 ```{r}
 
@@ -833,7 +813,6 @@ plot_perf
 
 ```
 
-
 ```{r}
 ####################################
 ##### Save plots for main text #####
@@ -861,19 +840,13 @@ ggsave("output/Figure_DataGenMech.png", Figure_DataGenMech ,
 
 ```
 
-
-
-
-
-
 **Coding stage**
 
-`6.3.software_type`	  What software(s) was used to run the simulation study? 
+`6.3.software_type` What software(s) was used to run the simulation study?
 
-`6.5.software_Rpackage_name`	  If an R package was reported, detail which one(s)
+`6.5.software_Rpackage_name` If an R package was reported, detail which one(s)
 
-`7.3.code_datagen_basedonprevious`	  Was the code of the data generating mechanism inspired or expanded from another simulation study code?
-
+`7.3.code_datagen_basedonprevious` Was the code of the data generating mechanism inspired or expanded from another simulation study code?
 
 ```{r}
 ###### 6: Software type
@@ -970,9 +943,9 @@ ggplot(survey, aes(x = `7.3.code_datagen_basedonprevious`, fill = `7.3.code_data
 
 **Analysis stage**
 
-`9.1.analysis_exploratory`	  Was a working example or case study conducted?
+`9.1.analysis_exploratory` Was a working example or case study conducted?
 
-`11.1.analysis_montecarlo_uncertainty`	  Are Monte Carlo error quantified to assess the simulation uncertainty? (by running the same simulation under different number of random-number seeds)
+`11.1.analysis_montecarlo_uncertainty` Are Monte Carlo error quantified to assess the simulation uncertainty? (by running the same simulation under different number of random-number seeds)
 
 ```{r}
 # yes/no questions - make function to create a horizontal histogram for a given variable
@@ -1006,12 +979,9 @@ create_hist(survey, "9.1.analysis_exploratory")
 create_hist(survey, "11.1.analysis_montecarlo_uncertainty")
 ```
 
+## Summarised count results
 
-
-
-## Summarised count results 
-
-Summarised counts of all variables with categories in survey. 
+Summarised counts of all variables with categories in survey.
 
 ```{r}
 
@@ -1055,12 +1025,8 @@ kable_output <- kable(combined_table, format = "html", caption = "Count of simul
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
 
 # colorrrrs
-colors <- c("#CCCCFF", "#FFE4B5", "#FD9ECC", "#CCFFCC", "#CCFFFF", "#FFE4E1", "#FFCCFF", "#F0E68C", 
-            "#E6E6FA", "#DAE315", "#ADD8E6", "#FEEFD5", "#DDA0DD", "#FFCCCC", "#A5F5EE", "#FFFD58",
-            "#E0FFFF", "#D8BFD8", "#F5DEB3", "#AAE1EE", "#D29DEE", "#FAFAD2", "#FFF0F5", "#5EDDD2",
-            "#FFF5EE", "#A1EE55", "#F0FFFF", "#F59EFA", "#FDF5E6", "#F1D8F0", "#F1C158", "#FFF0F5", 
-            "#F1A993",  "#FDD1FF", "#F0FFFF", "#F66EDD","#F0FFF0", "#F5D42D", "#EDFBD7", "#FDF5E6")
-
+colors <- rep(c("#EDFBD7", "white"),20)
+#"#FDF5E6"
 
 # apply colors to rows
 for (i in seq_along(variable_names)) {
@@ -1074,7 +1040,6 @@ for (i in seq_along(variable_names)) {
 kable_output
 
 ```
-
 
 ## Reviewer agreement
 
@@ -1109,8 +1074,6 @@ ggsave("output/crosscheck_agreement_lollipop.png", p,
 
 ```
 
-
-
 # Appendix
 
 ### Desirable properties of an estimator
@@ -1133,13 +1096,11 @@ Additionally, other properties:
 
 Morris, T. P., White, I. R., & Crowther, M. J. (2019). Using simulation studies to evaluate statistical methods. Statistics in Medicine, 38(11), 2074--2102. <https://doi.org/10.1002/sim.8086>
 
-
-
 # Session info
 
 ```{r Reproducibility-SessionInfo-R-environment, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width='100%', results='asis'}
 
-sessioninfo::session_info()%>%
+sessioninfo::session_info() %>%
   details::details(
     summary = 'Current session info',
     open    = F
