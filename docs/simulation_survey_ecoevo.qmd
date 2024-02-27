@@ -560,7 +560,7 @@ datgen_pars <- data.frame(pars=survey$`2.5.1.datagen_parameters`)
 datgen_pars_clean <- na.omit(datgen_pars)
 # histogram of number of parameters
 plot_pars <- ggplot(datgen_pars_clean, aes(x=pars)) +
-  geom_histogram(binwidth = 1, colour = "black", fill = "skyblue") +
+  geom_histogram(binwidth = 1, colour = "deepskyblue4", fill = "skyblue") +
   scale_fill_brewer(palette = "Pastel2") +
   scale_x_continuous(breaks = seq(0, 14, by = 1)) +
   scale_y_continuous(breaks = seq(0, 28, by=2)) +
@@ -586,7 +586,7 @@ datgen_cond_clean <- na.omit(datgen_cond)
 datgen_cond_clean$cond <- as.factor(datgen_cond_clean$cond)
 # histogram number of conditions
 plot_conds <- ggplot(datgen_cond_clean, aes(x=cond)) +
-  geom_bar(colour = "black", fill = "skyblue") +
+  geom_bar(colour = "deepskyblue4", fill = "skyblue") +
   theme_minimal() +
   scale_y_continuous(breaks = seq(0, 6, by = 1)) +
   #coord_flip() +
@@ -611,7 +611,7 @@ datgen_runs <- data.frame(runs=survey$`2.7.1.datagen_simulationruns`)
 datgen_runs$runs <- as.factor(datgen_runs$runs)
 # histogram of number of simulation runs
 plot_simruns <- ggplot(datgen_runs, aes(x=runs)) +
-  geom_bar(colour = "black", fill = "skyblue") +
+  geom_bar(colour = "deepskyblue4", fill = "skyblue") +
   scale_y_continuous(breaks = seq(0,28, by=5)) +
   theme_minimal() +
   #coord_flip() +
@@ -621,10 +621,6 @@ plot_simruns <- ggplot(datgen_runs, aes(x=runs)) +
 plot_simruns
 
 
-
-####### Simulation runs justified #######
-
-#table(survey$`2.7.3.datagen_simulationruns_justification`, useNA = "ifany")
 
 ```
 
@@ -703,17 +699,14 @@ estimand_counts <- estimand_counts %>%
     estimand_list=="Model (model selection)" ~ "Model selection"
   ))
 
-# get percentage from counts
-estimand_perct <- estimand_counts %>% 
-  mutate(Freq = Freq / sum(Freq) * 100)
 
 # Plot histogram
-plot_estarget <- ggplot(estimand_perct, aes(x = reorder(estimand_list, -Freq), y = Freq, fill = estimand_list)) +
+plot_estarget <- ggplot(estimand_counts, aes(x = reorder(estimand_list, -Freq), y = Freq, fill = estimand_list)) +
   geom_bar(stat = "identity") +
   scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   #coord_flip() +
-  labs(title = "Statistical target", x = "", y = "percentage of occurences") +
+  labs(title = "Statistical target", x = "", y = "percentage") +
   scale_y_continuous(breaks = seq(0,70, by=10)) +
   theme(axis.text.x = element_text(size=14, angle=45, hjust=1)) +
   theme(axis.text.y = element_text(size=14)) +
@@ -721,13 +714,10 @@ plot_estarget <- ggplot(estimand_perct, aes(x = reorder(estimand_list, -Freq), y
 plot_estarget
 
 
-#estimand_counts
 
 ###### 4: Method -------------------------------------------------------------------
 
-#table(survey$`4.3.method_type`)
-
-# Save counts per category
+# counts per category
 method_type <- table(survey$`4.3.method_type`)
 
 # order the counts in decreasing order
@@ -743,9 +733,8 @@ method_type <- method_type %>%
     Var1=="Study design" ~ "Study design"
   ))
 
-
 # Plot histogram
-plot_method <-ggplot(method_type, aes(x = reorder(Var1, -Freq), y = Freq, fill = Var1)) +
+plot_method <- ggplot(method_type, aes(x = reorder(Var1, -Freq), y = Freq, fill = Var1)) +
   geom_bar(stat = "identity") +
   scale_fill_brewer(palette = "Pastel2") +
   theme_minimal() +
@@ -760,12 +749,10 @@ plot_method <-ggplot(method_type, aes(x = reorder(Var1, -Freq), y = Freq, fill =
 plot_method
 
 
+
 ###### 5: Performance measures -----------------------------------------------------
 
-#table(survey$`5.4.perfmeasures`)
-# make new vector of all performance measures
 perf_measures <- survey$`5.4.perfmeasures`
-
 
 # Obtained data frame with all single entried of performance measures
 perf_dat <- data.frame(PerfMeasures = perf_measures) %>%
@@ -797,12 +784,12 @@ perf_dat <- data.frame(PerfMeasures = perf_measures) %>%
 
 
 # Plot histogram with ordered categories
-plot_perf <- ggplot(perf_dat, aes(x = reorder(category, -percentage), y = percentage, fill = category)) +
+plot_perf <- ggplot(perf_dat, aes(x = reorder(category, -counts), y = counts, fill = category)) +
   geom_bar(stat = "identity") +
   #fill=c(rep("skyblue",8),"#d9700f","skyblue")
   theme_minimal() +
   scale_fill_brewer(palette = "Set3") +
-  labs(title = "Performance Measure", x = "", y = "percentage of occurences") +
+  labs(title = "Performance Measure", x = "", y = "percentage") +
   #coord_flip() +
   scale_y_continuous(breaks = seq(0,25, by=5)) +
   theme(axis.text.x = element_text(size=14, angle = 45, vjust = 1, hjust=1)) +
