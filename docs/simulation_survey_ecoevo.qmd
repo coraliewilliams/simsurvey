@@ -16,7 +16,9 @@ editor_options:
   chunk_output_type: console
 ---
 
-In this study we surveyed 100 research articles in ecology and evolution journals that included simulation studies evaluating statistical methods. The following HTML webpage provides the code necessary to reproduce the analysis conducted in the paper, along with detailed explanations of the methods and results.
+This study surveyed 100 research articles in ecology and evolution journals that included simulation studies evaluating statistical methods. The following HTML webpage provides the code necessary to reproduce the analysis detailed in the paper, along with explanations of the analysis.
+
+The code is written in R (R Core Team, 2023) and is designed to be run on a computer with a working installation of the R packages listed in the *Load packages* section of the code with versions specified in the *Session information* section.
 
 **Load packages**
 
@@ -112,15 +114,13 @@ The custom search string was developed on 13/10/2022 on Web of Science
 -   Exclude simulation studies who are not the main part of the paper.
 
 ::: column-margin
-Note, exclusion term criteria were refined post-hoc.
+Note, decision tree with inclusion and exclusion criteria are provided here: {https://osf.io/xc47g?view_only=71e4283e613a4e1f96b57c71c0d9cf17}{https://osf.io/xc47g?view_only=71e4283e613a4e1f96b57c71c0d9cf17}
 :::
 
-### Deviations and additions
 
 Five articles were added post-hoc to the search and screening to reach 100 articles.
 
 ```{r}
-# 10/11/2023
 # import rayyan decision of 50 papers screening
 rayyan_50papers <- read.csv("~/Projects/simsurvey/data/survey/rayyan_abstract_results_50papers.csv")
 
@@ -147,6 +147,71 @@ survey_raw <- read_excel("~/Projects/simsurvey/data/survey/simulationSurvey_extr
 survey <- survey_raw %>% select(!matches("comment"))
 
 ```
+
+
+### Literature search results
+
+```{r}
+# make year as factor
+journal_count <- as.data.frame(table(survey$journal))
+journal_count <- journal_count %>% 
+  select(Journal="Var1",Freq="Freq") %>%
+  arrange(desc(Freq))
+kable(journal_count)
+
+# make year as factor
+survey$paper_year <-  as.factor(survey$paper_year)
+
+# plot histogram
+ggplot(survey, aes(x = paper_year)) +
+  geom_bar(aes(fill = paper_year)) +
+  xlab("") +
+  ylab("Count") +
+  ggtitle("Publication year") +
+  scale_fill_manual(values=rep("lightblue",6)) +
+  scale_y_continuous(breaks = seq(0, 28, by = 5), limits = c(0, 28)) +
+  theme(
+    axis.text.x = element_text(angle = 40, hjust=1, size = 12), 
+    axis.text.y = element_text(size = 12),  
+    axis.title.x = element_text(size = 12), 
+    axis.title.y = element_text(size = 12), 
+    panel.background = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_line(color = "grey50"),
+    panel.grid.minor.y = element_line(color = "grey50")
+  ) + theme(legend.position="none")
+
+```
+
+## Reporting results
+
+The following questions were focused on simulation studies reporting quality:
+
+`1.1.aims_reporting` Are the aims of the simulation defined?
+
+`2.1.datagen_reporting` Is the data-generating mechanisms described?
+
+`2.4.datagen_informed` Are the specifications of the data-generating mechanisms informed (i.e. justified with a reference or narrative justification)?
+
+`3.1.estimandtarget_reporting` Were the estimand(s), statistical target and task of the simulation study described?
+
+`4.1.method_reporting` Is the study citing other relevant statistical methodology literature on the topic?
+
+`5.1.perfmeasures_reporting` Were all performance measures planned to be investigated defined or described?
+
+`5.3.perfmeasures_lessknown` If a performance measure planned to be used is less-known, was the formula given explicitly?
+
+`6.1.software_reporting` Is/Are all software(s) and all package(s) used in the simulation study reported explicitly?
+
+`6.4.software_Rpackage` If R statistical software was used, were the packages that were used reported?
+
+`7.1.code_datagen` Is the code to execute the simulation study made available?
+
+`7.2.code_datagen_allsteps` Does the code include data generating and analysis simulation steps?
+
+`8.1.code_perfmeasures` Is the code to obtain performance measures made available?
+
 
 ```{r}
 
@@ -239,68 +304,6 @@ rs3 <- c("9.2.analysis_exploratory_reporting",
 
 ```
 
-### Literature search results
-
-```{r}
-# make year as factor
-journal_count <- as.data.frame(table(survey$journal))
-journal_count <- journal_count %>% 
-  select(Journal="Var1",Freq="Freq") %>%
-  arrange(desc(Freq))
-kable(journal_count)
-
-# make year as factor
-survey$paper_year <-  as.factor(survey$paper_year)
-
-# plot histogram
-ggplot(survey, aes(x = paper_year)) +
-  geom_bar(aes(fill = paper_year)) +
-  xlab("") +
-  ylab("Count") +
-  ggtitle("Publication year") +
-  scale_fill_manual(values=rep("lightblue",6)) +
-  scale_y_continuous(breaks = seq(0, 28, by = 5), limits = c(0, 28)) +
-  theme(
-    axis.text.x = element_text(angle = 40, hjust=1, size = 12), 
-    axis.text.y = element_text(size = 12),  
-    axis.title.x = element_text(size = 12), 
-    axis.title.y = element_text(size = 12), 
-    panel.background = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.major.y = element_line(color = "grey50"),
-    panel.grid.minor.y = element_line(color = "grey50")
-  ) + theme(legend.position="none")
-
-```
-
-## Reporting results
-
-The following questions were focused on simulation studies reporting quality:
-
-`1.1.aims_reporting` Are the aims of the simulation defined?
-
-`2.1.datagen_reporting` Is the data-generating mechanisms described?
-
-`2.4.datagen_informed` Are the specifications of the data-generating mechanisms informed (i.e. justified with a reference or narrative justification)?
-
-`3.1.estimandtarget_reporting` Were the estimand(s), statistical target and task of the simulation study described?
-
-`4.1.method_reporting` Is the study citing other relevant statistical methodology literature on the topic?
-
-`5.1.perfmeasures_reporting` Were all performance measures planned to be investigated defined or described?
-
-`5.3.perfmeasures_lessknown` If a performance measure planned to be used is less-known, was the formula given explicitly?
-
-`6.1.software_reporting` Is/Are all software(s) and all package(s) used in the simulation study reported explicitly?
-
-`6.4.software_Rpackage` If R statistical software was used, were the packages that were used reported?
-
-`7.1.code_datagen` Is the code to execute the simulation study made available?
-
-`7.2.code_datagen_allsteps` Does the code include data generating and analysis simulation steps?
-
-`8.1.code_perfmeasures` Is the code to obtain performance measures made available?
 
 ```{r}
 
@@ -337,7 +340,8 @@ create_plot <- function(survey, r_vector, title, labels) {
   ggplot(data = percent_r, aes(x = name, y = percentage, fill = value)) +
     geom_col(width = 0.7, color = "black") +
     coord_flip(ylim = c(0, 100)) +
-    scale_fill_manual(values = c("N.A."="white", "No"="#713979", "Yes"="#4DAF4A")) +
+    scale_fill_manual(values = c("N.A."="white", "No"="#713979", "Yes"="#4DAF4A"),
+                      guide = guide_legend(reverse = TRUE)) +
     theme(legend.position = "bottom", 
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -350,9 +354,6 @@ create_plot <- function(survey, r_vector, title, labels) {
 }
 
 # Apply the function to each question group
-# fig1 <- create_plot(survey, r1, "Reporting in planning stage")
-# fig2 <- create_plot(survey, r2, "Reporting in coding stage")
-# fig3 <- create_plot(survey, r3, "Reporting in analysis stage")
 supp1 <- create_plot(survey, r, "Reporting description", labels=r_labels)
 
 # Plot the figures
@@ -391,9 +392,6 @@ The following questions were focused on simulation studies reporting section:
 ```{r}
 
 # Apply the function to each question group
-#fig4 <- create_plot(survey, rs1, "Reporting section for planning stage")
-#fig5 <- create_plot(survey, rs2, "Reporting section for coding stage")
-#fig6 <- create_plot(survey, rs3, "Reporting section for analysis stage")
 supp2 <- create_plot(survey, rs, "Reporting section", rs_labels)
 
 # Plot the figures
@@ -407,7 +405,7 @@ Figure_ReportingPractices <- supp1 / supp2 +
 ggsave("output/Figure_ReportingPractices_allStages.png", Figure_ReportingPractices,
        width = 11, height = 9, dpi = 400, units = "in", bg = "transparent")
 
-```
+``` 
 
 ## Characteristics results
 
@@ -459,7 +457,7 @@ aims_dat <- data.frame(AimsPurpose = aims_purpose) %>%
 # Plot histogram with ordered categories
 plot_aims <- ggplot(aims_dat, aes(x = reorder(category, -counts), y = counts, fill = category)) +
   geom_bar(stat = "identity") +
-  scale_fill_brewer(palette = "Pastel2") +
+  scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   scale_y_continuous(breaks = seq(0, 80, by = 10)) +
   #coord_flip() + 
@@ -469,10 +467,6 @@ plot_aims <- ggplot(aims_dat, aes(x = reorder(category, -counts), y = counts, fi
   theme(legend.position = "none") +
   coord_fixed(ratio=0.04)
 plot_aims
-
-
-#table(survey$`1.3.aims_purpose`, useNA = "ifany")
-
 
 ```
 
@@ -507,7 +501,7 @@ datgen_type_summary <- datgen_type %>%
 # Plot histogram of data-generation type
 plot_datgen <- ggplot(datgen_type_summary, aes(x = reorder(Type, -counts), y = counts, fill = Type)) +
   geom_bar(stat = "identity") +
-  scale_fill_brewer(palette = "Pastel2") +
+  scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   #coord_flip() +
   labs(title = "Data-generating type", x = "", y = "percentage") +
@@ -539,7 +533,7 @@ datgen_inform_summary <- datgen_inform %>%
 # Plot histogram of data-generation type
 ggplot(datgen_inform_summary, aes(x = reorder(datgen_inform, counts), y = counts, fill = datgen_inform)) +
   geom_bar(stat = "identity") +
-  scale_fill_brewer(palette = "Pastel2") +
+  scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   coord_flip() +
   labs(title = "Data-generating justification", x = "", y = "counts")  +
@@ -561,7 +555,6 @@ datgen_pars_clean <- na.omit(datgen_pars)
 # histogram of number of parameters
 plot_pars <- ggplot(datgen_pars_clean, aes(x=pars)) +
   geom_histogram(binwidth = 1, colour = "deepskyblue4", fill = "skyblue") +
-  scale_fill_brewer(palette = "Pastel2") +
   scale_x_continuous(breaks = seq(0, 14, by = 1)) +
   scale_y_continuous(breaks = seq(0, 28, by=2)) +
   theme_minimal() +
@@ -615,7 +608,7 @@ plot_simruns <- ggplot(datgen_runs, aes(x=runs)) +
   scale_y_continuous(breaks = seq(0,28, by=5)) +
   theme_minimal() +
   #coord_flip() +
-  theme(axis.text.x = element_text(size=14,angle=45, hjust=1)) +
+  theme(axis.text.x = element_text(size=13,angle=45, hjust=1)) +
   theme(axis.text.y = element_text(size=14)) +
   labs(title = "Number of simulation runs", x = "No. runs", y = "frequency")
 plot_simruns
@@ -736,7 +729,7 @@ method_type <- method_type %>%
 # Plot histogram
 plot_method <- ggplot(method_type, aes(x = reorder(Var1, -Freq), y = Freq, fill = Var1)) +
   geom_bar(stat = "identity") +
-  scale_fill_brewer(palette = "Pastel2") +
+  scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   #coord_flip() +
   labs(title = "Method type", x = "", y = "percentage") +
@@ -791,7 +784,7 @@ plot_perf <- ggplot(perf_dat, aes(x = reorder(category, -counts), y = counts, fi
   scale_fill_brewer(palette = "Set3") +
   labs(title = "Performance Measure", x = "", y = "percentage") +
   #coord_flip() +
-  scale_y_continuous(breaks = seq(0,25, by=5)) +
+  scale_y_continuous(breaks = seq(0,60, by=5)) +
   theme(axis.text.x = element_text(size=14, angle = 45, vjust = 1, hjust=1)) +
   theme(axis.text.y = element_text(size=14)) +
   theme(legend.position = "none")
@@ -878,7 +871,7 @@ software_summary <- software_dat %>%
 # Plot histogram
 ggplot(software_summary, aes(x = reorder(Software, counts), y = counts, fill = Software)) +
   geom_bar(stat = "identity") +
-  scale_fill_brewer(palette = "Pastel2") +
+  scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   coord_flip()+
   scale_y_continuous(breaks = seq(0,75, by=10)) +
@@ -1011,9 +1004,9 @@ combined_table <- lapply(variable_names, create_frequency_table, data = survey) 
 kable_output <- kable(combined_table, format = "html", caption = "Count of simulation studies per category") %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
 
-# colorrrrs
+# colorrrs
 colors <- rep(c("#EDFBD7", "white"),20)
-#"#FDF5E6"
+
 
 # apply colors to rows
 for (i in seq_along(variable_names)) {
@@ -1023,7 +1016,6 @@ for (i in seq_along(variable_names)) {
   }
 }
 
-# print - tada
 kable_output
 
 ```
@@ -1034,19 +1026,64 @@ kable_output
 # load data
 datcrosscheck <- read_excel("~/Projects/simsurvey/data/survey/simsurvey_crosscheck_summary.xlsx", na=c("", "NA", NA))
 
-# convert into percentages
+# make plot labels for survey questions
+q_label <- c("18.aims reporting", "30.aims reporting section",
+             "1.aims purpose", "2.preregistration",
+             "19.datagen reporting","31.datagen reporting section",
+             "3.datagen type", "4.datagen informed",
+             "5.datagen parameters", "32.datagen parameters section",
+             "6.datagen conditions", "33.datagen conditions section",
+             "7.datagen simulation runs", "34.datagen simulationruns section",
+             "8.datagen simulation runs justification", "9.datagen distribution",
+             "20.estimand/target reporting", "35.estimand/target reporting section",
+             "10.estimand/target type", "21.method literature reporting",
+             "36.method lit reporting section", "11.method type",
+             "22.perfmeasures reporting", "37.perf measures reporting section",
+             "23.perfmeasures less known", "12.perf measures",
+             "24.software reporting", "38.software reporting section",
+             "13.software type", "25.software R package",
+             "14.software R package name", "26.code datagen",
+             "27.code datagen all steps", "15.code datagen based on previous",
+             "28.code perf measures", "16.analysis exploratory",
+             "39.analysis case study reporting section", "29.analysis perfmeasures reporting",
+             "40.analysis perfmeasures reporting section", "17.analysis montecarlo uncertainty",
+             "41.analysis montecarlo reporting section")
+
+
+# make into factor and order chrononologically 
+datcrosscheck$survey_question_label <- q_label
+datcrosscheck$survey_question_label <- factor(datcrosscheck$survey_question_label,
+                                              levels=rev(c("1.aims purpose", "2.preregistration","3.datagen type",
+                                                       "4.datagen informed", "5.datagen parameters", "6.datagen conditions",
+                                                       "7.datagen simulation runs", "8.datagen simulation runs justification",
+                                                       "9.datagen distribution", "10.estimand/target type", "11.method type",
+                                                       "12.perf measures", "13.software type", "14.software R package name",
+                                                       "15.code datagen based on previous", "16.analysis exploratory",
+                                                       "17.analysis montecarlo uncertainty", "18.aims reporting",
+                                                       "19.datagen reporting", "20.estimand/target reporting", 
+                                                       "21.method literature reporting", "22.perfmeasures reporting",
+                                                       "23.perfmeasures less known", "24.software reporting",
+                                                       "25.software R package", "26.code datagen", "27.code datagen all steps",
+                                                       "28.code perf measures", "29.analysis perfmeasures reporting",
+                                                       "30.aims reporting section", "31.datagen reporting section",
+                                                       "32.datagen parameters section", "33.datagen conditions section",
+                                                       "34.datagen simulationruns section", "35.estimand/target reporting section",
+                                                       "36.method lit reporting section", "37.perf measures reporting section",
+                                                       "38.software reporting section", "39.analysis case study reporting section",
+                                                       "40.analysis perfmeasures reporting section", "41.analysis montecarlo reporting section")))
+
+
+
+# get percentages
 max_value <- max(datcrosscheck$crosscheck_agreement)
 datcrosscheck$crosscheck_agreement_percent <- (datcrosscheck$crosscheck_agreement / max_value) * 100
 
-# make into factor with same order as in excel sheet
-datcrosscheck$survey_question <- factor(datcrosscheck$survey_question,
-                                        levels = rev(datcrosscheck$survey_question))
 
 # make lollipop plot of crosscheck agreement
-p <- ggplot(datcrosscheck, aes(x = crosscheck_agreement_percent, y = survey_question)) +
+p <- ggplot(datcrosscheck, aes(x = crosscheck_agreement_percent, y = survey_question_label)) +
   geom_segment(aes(x = 0,
                    xend = crosscheck_agreement_percent,
-                   yend = survey_question), colour = "darkgray") +
+                   yend = survey_question_label), colour = "darkgray") +
   geom_point(colour = "deepskyblue3", size = 2) +
   labs(x = "Crosscheck Agreement (%)", y = "Survey Question") +
   coord_fixed(4) +
@@ -1083,7 +1120,9 @@ Additionally, other properties:
 
 Morris, T. P., White, I. R., & Crowther, M. J. (2019). Using simulation studies to evaluate statistical methods. Statistics in Medicine, 38(11), 2074--2102. <https://doi.org/10.1002/sim.8086>
 
-# Session info
+R Core Team (2023). *R: A Language and Environment for Statistical Computing*. R Foundation for Statistical Computing, Vienna, Austria. <https://www.R-project.org/>.
+
+# Session information {#session_info}
 
 ```{r Reproducibility-SessionInfo-R-environment, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width='100%', results='asis'}
 
