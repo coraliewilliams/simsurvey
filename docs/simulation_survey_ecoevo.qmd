@@ -114,7 +114,7 @@ The custom search string was developed on 13/10/2022 on Web of Science
 -   Exclude simulation studies who are not the main part of the paper.
 
 ::: column-margin
-Note, decision tree with inclusion and exclusion criteria are provided here: {https://osf.io/xc47g?view_only=71e4283e613a4e1f96b57c71c0d9cf17}{https://osf.io/xc47g?view_only=71e4283e613a4e1f96b57c71c0d9cf17}
+Note, link to decision tree with inclusion and exclusion criteria are provided in Methods section of the paper.
 :::
 
 
@@ -461,7 +461,8 @@ plot_aims <- ggplot(aims_dat, aes(x = reorder(category, -counts), y = counts, fi
   theme_minimal() +
   scale_y_continuous(breaks = seq(0, 80, by = 10)) +
   #coord_flip() + 
-  labs(title = "Aims and Purposes", x = "", y = "percentage") +
+  labs(title = "Aims and Purposes", x = "", y = "Percentage (%)\n") +
+  theme(axis.title.y = element_text(size=14)) +
   theme(axis.text.x = element_text(size=14))  +
   theme(axis.text.y = element_text(size=14)) +
   theme(legend.position = "none") +
@@ -504,7 +505,8 @@ plot_datgen <- ggplot(datgen_type_summary, aes(x = reorder(Type, -counts), y = c
   scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   #coord_flip() +
-  labs(title = "Data-generating type", x = "", y = "percentage") +
+  labs(title = "Data-generating type", x = "", y = "Percentage (%)\n") +
+  theme(axis.title.y = element_text(size=14)) +
   scale_y_continuous(breaks = seq(0, 80, by = 10)) +
   theme(axis.text.x = element_text(size=14, angle=45, hjust=1))  +
   theme(axis.text.y = element_text(size=14))  +
@@ -569,7 +571,6 @@ plot_pars
 cond_mean <- mean(survey$`2.6.1.datagen_conditions`, na.rm=T)
 cond_min <- min(survey$`2.6.1.datagen_conditions`, na.rm=T)
 cond_max <- max(survey$`2.6.1.datagen_conditions`, na.rm=T)
-
 cond_med <- median(survey$`2.6.1.datagen_conditions`, na.rm=T)
 
 # Set up data to plot
@@ -651,12 +652,13 @@ dist_summary <- dist_new %>%
 
 
 # Plot histogram
-plot_dist <- ggplot(dist_summary, aes(x = Distribution, y = Percentage, fill = Distribution)) +
+plot_dist <- ggplot(dist_summary, aes(x = Distribution, y = counts, fill = Distribution)) +
   geom_bar(stat = "identity") +
   scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   scale_y_continuous(breaks = seq(0,50, by=5)) +
-  labs(title = "Statistical Distributions", x = "", y = "percentage of occurences") +
+  labs(title = "Statistical Distributions", x = "", y = "Percentage (%)\n") +
+  theme(axis.title.y = element_text(size=14)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size=14)) +
   theme(axis.text.y = element_text(size=14)) +
   theme(legend.position = "none")
@@ -699,7 +701,8 @@ plot_estarget <- ggplot(estimand_counts, aes(x = reorder(estimand_list, -Freq), 
   scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   #coord_flip() +
-  labs(title = "Statistical target", x = "", y = "percentage") +
+  labs(title = "Statistical target", x = "", y = "Percentage (%)\n") +
+  theme(axis.title.y = element_text(size=14)) +
   scale_y_continuous(breaks = seq(0,70, by=10)) +
   theme(axis.text.x = element_text(size=14, angle=45, hjust=1)) +
   theme(axis.text.y = element_text(size=14)) +
@@ -732,10 +735,11 @@ plot_method <- ggplot(method_type, aes(x = reorder(Var1, -Freq), y = Freq, fill 
   scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   #coord_flip() +
-  labs(title = "Method type", x = "", y = "percentage") +
+  labs(title = "Method type", x = "", y = "Percentage (%)\n") +
   theme(axis.text.x = element_text(size=14, angle=45, hjust=1)) +
   theme(axis.text.y = element_text(size=14)) +
-  scale_y_continuous(breaks = seq(0,70, by=10)) +
+  theme(axis.title.y = element_text(size=14)) +
+  scale_y_continuous(breaks = seq(0,70, by=5), limits=c(0,55)) +
   theme(legend.position = "none") +
   coord_fixed(0.08)
 
@@ -782,9 +786,10 @@ plot_perf <- ggplot(perf_dat, aes(x = reorder(category, -counts), y = counts, fi
   #fill=c(rep("skyblue",8),"#d9700f","skyblue")
   theme_minimal() +
   scale_fill_brewer(palette = "Set3") +
-  labs(title = "Performance Measure", x = "", y = "percentage") +
+  labs(title = "Performance Measure", x = "", y = "Percentage (%)\n") +
   #coord_flip() +
-  scale_y_continuous(breaks = seq(0,60, by=5)) +
+  scale_y_continuous(breaks = seq(0,55, by=5)) +
+    theme(axis.title.y = element_text(size=14)) +
   theme(axis.text.x = element_text(size=14, angle = 45, vjust = 1, hjust=1)) +
   theme(axis.text.y = element_text(size=14)) +
   theme(legend.position = "none")
