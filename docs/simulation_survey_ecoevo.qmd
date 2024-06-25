@@ -32,6 +32,7 @@ The code is written in R (R Core Team, 2023) and is designed to be run with inst
 pacman::p_load(
   rmarkdown,
   readr,
+  plyr,
   dplyr,
   purrr,
   splitstackshape,
