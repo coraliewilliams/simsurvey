@@ -16,9 +16,9 @@ editor_options:
   chunk_output_type: console
 ---
 
-This study surveyed 100 research articles in ecology and evolution journals that included simulation studies evaluating statistical methods. The following HTML webpage provides the code necessary to reproduce the analysis detailed in the paper, along with explanations of the analysis.
+This study surveyed 100 research articles in ecology and evolution journals that included simulation studies evaluating statistical methods. The following HTML webpage provides the code necessary to reproduce the analysis detailed in the paper.
 
-The code is written in R (R Core Team, 2023) and is designed to be run on a computer with a working installation of the R packages listed in the *Load packages* section of the code with versions specified in the *Session information* section.
+The code is written in R (R Core Team, 2023) and is designed to be run with installation of the R packages listed in the *Load packages* section of the code with versions specified in the *Session information* section.
 
 **Load packages**
 
@@ -114,7 +114,7 @@ The custom search string was developed on 13/10/2022 on Web of Science
 -   Exclude simulation studies who are not the main part of the paper.
 
 ::: column-margin
-Note, link to decision tree with inclusion and exclusion criteria are provided in Methods section of the paper.
+Note, full decision tree with inclusion and exclusion criteria are provided in Supporting Information 1.
 :::
 
 
@@ -825,6 +825,53 @@ ggsave("output/Figure_DataGenMech.png", Figure_DataGenMech ,
 
 ```
 
+
+```{r}
+##################################################################
+##### Cross-table of statistical tasks vs performance measures #####
+##################################################################
+
+# get table of frequency and percentage of performance measures by statistical tasks 
+
+cross_table <- survey %>%
+  select(`3.3.estimandtarget_type`, `5.4.perfmeasures`) %>%
+  # Separate rows based on the delimiters ";"
+  separate_rows(`5.4.perfmeasures`, sep = ";|,") %>%
+  # Clean up the Performance Measures column
+  mutate(perfmeasures = str_trim(`5.4.perfmeasures`),
+         perfmeasures = case_when(
+           grepl("Bias", perfmeasures, ignore.case = TRUE) ~ "Bias",
+           grepl("Mean squared error|MSE|relative standard error", perfmeasures, ignore.case = TRUE) ~ "Mean squared error (MSE)",
+           grepl("Confidence interval length|width", perfmeasures, ignore.case = TRUE) ~ "Confidence interval width",
+           grepl("Precision|coefficient of variation|Coefficient of variance", perfmeasures, ignore.case = TRUE) ~ "Precision",
+           grepl("Power", perfmeasures, ignore.case = TRUE) ~ "Power",
+           grepl("Type I|Type II", perfmeasures, ignore.case = TRUE) ~ "Type I or II error",
+           grepl("false positive rate|false negative rate|TPR|TNR|FPR|FNR|classification rate|positive predictive value| misclassification|error rate", perfmeasures, ignore.case = TRUE) ~ "Classification rate",
+           grepl("Coverage", perfmeasures, ignore.case = TRUE) ~ "Coverage",
+           grepl("Accuracy", perfmeasures, ignore.case = TRUE) ~ "Not reported or unclear",
+           TRUE ~ "Other"
+         ),
+         estimandtarget = case_when(
+           grepl("Estimand", `3.3.estimandtarget_type`, ignore.case = TRUE) ~ "Estimand",
+           grepl("Null hypothesis", `3.3.estimandtarget_type`, ignore.case = TRUE) ~ "Null hypothesis",
+           grepl("Selected design", `3.3.estimandtarget_type`, ignore.case = TRUE) ~ "Study design",
+           grepl("Predictions", `3.3.estimandtarget_type`, ignore.case = TRUE) ~ "Predictions",
+           grepl("Model", `3.3.estimandtarget_type`, ignore.case = TRUE) ~ "Selected model",
+           TRUE ~ "Other"
+         )) %>%
+  group_by(estimandtarget, perfmeasures) %>%
+  summarise(counts = n(), .groups = 'drop') %>%
+  # Calculate percentage within each Estimand/Statistical task
+  group_by(estimandtarget) %>%
+  mutate(percentage = counts / sum(counts) * 100) %>%
+  ungroup() %>%
+  arrange(estimandtarget, desc(counts))
+
+
+```
+
+
+
 **Coding stage**
 
 `6.3.software_type` What software(s) was used to run the simulation study?
@@ -1103,23 +1150,6 @@ ggsave("output/crosscheck_agreement_lollipop.png", p,
 
 ```
 
-# Appendix
-
-### Desirable properties of an estimator
-
-In statistics, an estimator is a function that is used to estimate a population parameter based on a sample of data. There are several desirable properties that an estimator may possess, including:
-
--   **Unbiasedness:** An estimator is said to be unbiased if its expected value is equal to the true value of the population parameter being estimated. This means that, on average, the estimator will produce estimates that are close to the true value. $E[\hat{θ}]=θ$
-
--   **Consistency:** An estimator is said to be consistent if the difference between the estimated value and the true value of the population parameter tends to zero as the sample size increases. This means that the estimator will produce more accurate estimates as the amount of data used to estimate the parameter increases. $\hat{θ_n}→θ$ as $n→∞$
-
--   **Efficiency:** An estimator is said to be efficient if it has a smaller variance than other estimators that are unbiased and consistent. This means that the estimator will produce estimates that are more precise, on average, than other estimators. $Var(\hat{θ})$
-
-Additionally, other properties:
-
--   **Sufficiency:** An estimator is said to be sufficient if it is a function of all the relevant information in the data. This means that no other estimator can produce estimates that are more accurate, on average, than the sufficient estimator.
-
--   **Robustness**: An estimator is robust if it remains relatively unbiased and efficient when the underlying assumptions of the model are violated.
 
 # References
 
