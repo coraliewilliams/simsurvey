@@ -219,6 +219,7 @@ The following questions were focused on simulation studies reporting quality:
 # Store 12 reporting questions -------------------
 r <- c("1.1.aims_reporting", 
        "2.1.datagen_reporting", 
+       "2.7.3.datagen_simulationruns_justification",
        "3.1.estimandtarget_reporting",
        "4.1.method_reporting",
        "5.1.perfmeasures_reporting",
@@ -228,20 +229,25 @@ r <- c("1.1.aims_reporting",
        "7.1.code_datagen",
        "7.2.code_datagen_allsteps",
        "8.1.code_perfmeasures",
-       "10.1.analysis_perfmeasures_reporting")
+       "9.1.analysis_exploratory",
+       "10.1.analysis_perfmeasures_reporting",
+       "11.1.analysis_montecarlo_uncertainty")
 
-r_labels <- c("1.aims", 
-              "2.data generation mechanisms", 
-              "3.estimand/target",
-              "4.method",
-              "5.performance measures",
-              "5.performance measures less known",
-              "6.software",
-              "6.software package",
-              "7.code for data generation",
-              "7.code for all simulation steps",
-              "8.code for performance measures",
-              "10.analysis in graphical or tabular form")
+r_labels <- c("1. aims stated", 
+              "2. data generation mechanisms described", 
+              "2. number of simulation runs justified",
+              "3. estimand/target(s) stated",
+              "4. relevant literature cited from methods",
+              "5. performance measures described",
+              "5. performance measures less known defined",
+              "6.programming language(s) provided",
+              "6. package provided",
+              "7. code for data generation",
+              "7. code for all simulation steps",
+              "8. code for performance measures",
+              "9. analysis with a case study",
+              "10. analysis in graphical or tabular form",
+              "11. monte carlo error reported")
 
 
 # only planning stage 
