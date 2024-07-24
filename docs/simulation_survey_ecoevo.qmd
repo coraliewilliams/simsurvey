@@ -16,7 +16,9 @@ editor_options:
   chunk_output_type: console
 ---
 
-This study surveyed 100 research articles in ecology and evolution journals that included simulation studies evaluating statistical methods. The following HTML webpage provides the code necessary to reproduce the analysis detailed in the paper.
+This webpage contains the R code used for the survey analysis presented in the paper "*Transparent Reporting Items for Simulation Studies Evaluating Statistical Methods: Foundations for Reproducibility and Reliability*".
+
+In our survey, we assessed and characterised 100 research articles in ecology and evolution journals featuring simulation studies evaluating statistical methods.
 
 The code is written in R (R Core Team, 2023) and is designed to be run with installation of the R packages listed in the *Load packages* section of the code with versions specified in the *Session information* section.
 
