@@ -1,5 +1,5 @@
 ---
-title: "Current Practices of Simulation Studies for Statistical Method Evaluation in Ecology and Evolutionary Biology"
+title: "Survey of Current Practices of Simulation Studies for Statistical Method Evaluation in Ecology and Evolutionary Biology"
 #author: "Coralie Williams, Yefeng Yang, Malgorzata Lagisz, Kyle Morrison, Lorenzo Ricolfi, David Warton, and Shinichi Nakagawa"
 date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
 format:
@@ -21,6 +21,11 @@ This webpage contains the R code used for the survey analysis presented in the p
 In our survey, we assessed and characterised 100 research articles in ecology and evolution journals featuring simulation studies evaluating statistical methods.
 
 The code is written in R (R Core Team, 2023) and is designed to be run with installation of the R packages listed in the *Load packages* section of the code with versions specified in the *Session information* section.
+
+Corresponding author contact: [coralie.williams@unsw.edu.au](coralie.williams@unsw.edu.au)
+
+
+# Literature search
 
 **Load packages**
 
@@ -55,8 +60,6 @@ pacman::p_load(
 
 options(digits = 3, scipen = 5)
 ```
-
-# Literature search
 
 ## Journal list
 
