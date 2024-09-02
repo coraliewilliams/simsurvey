@@ -1,6 +1,6 @@
 ---
 title: "Survey of Current Practices of Simulation Studies for Statistical Method Evaluation in Ecology and Evolutionary Biology"
-#author: "Coralie Williams, Yefeng Yang, Malgorzata Lagisz, Kyle Morrison, Lorenzo Ricolfi, David Warton, and Shinichi Nakagawa"
+author: "Coralie Williams, Yefeng Yang, Malgorzata Lagisz, Kyle Morrison, Lorenzo Ricolfi, David Warton, and Shinichi Nakagawa"
 date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
 format:
   html:
@@ -22,7 +22,7 @@ In our survey, we assessed and characterised 100 research articles in ecology an
 
 The code is written in R (R Core Team, 2023) and is designed to be run with installation of the R packages listed in the *Load packages* section of the code with versions specified in the *Session information* section.
 
-Corresponding author contact: [coralie.williams@unsw.edu.au](coralie.williams@unsw.edu.au)
+Corresponding author contact: [coralie.williams@unsw.edu.au](mailto:coralie.williams@unsw.edu.au?subject=%20Simulation%20study%20practices%20in%20EcoEvo)
 
 
 # Literature search
@@ -102,25 +102,6 @@ The custom search string was developed on 13/10/2022 on Web of Science
 
 ::: {.callout-tip appearance="minimal" icon="false"}
 **(TS=((simulation\*) AND ("method") AND ("compar" OR "evaluat" OR "validat" OR "statist") AND (bias OR coverag\* OR power OR convergence OR"standard error" OR "confidence interval" OR "performance measure" OR "mean error" OR "type I error"))) AND WC=("Ecology" OR "Evolutionary Biology"**
-:::
-
-## Inclusion criteria
-
--   Include publications between 01-01-2018 and 01-10-2022.
--   Include studies using simulation for the evaluation of statistical methodologies.
--   Included studies published in one of predefined journals in ecology or evolutionary biology.
--   Include if full text is available.
--   Include if full text is in English.
-
-## Exclusion criteria
-
--   Exclude simulation studies that are part of a review, commentary, letter to the editor or tutorial (for example: <https://doi.org/10.1111/ecog.04385>).
--   Exclude simulation studies that are not evaluating statistical methods (for example simulation studies to assess ecological theories: <https://doi.org/10.1016/j.ecolmodel.2019.02.007>).
--   Exclude simulation studies that are used to solely analyse data e.g. Monte Carlo Markov Chain (MCMC) simulations.
--   Exclude simulation studies who are not the main part of the paper.
-
-::: column-margin
-Note, full decision tree with inclusion and exclusion criteria are provided in Supporting Information 1.
 :::
 
 
